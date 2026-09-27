@@ -4,17 +4,79 @@
 .resident-profile-image { width: 32px; height: 32px; min-width: 32px; border-radius: 9999px; object-fit: cover; }
 @media (max-width: 639px) { .resident-search { width: min(220px, 52vw); } .resident-header-username { display: none; } }
 </style>
-<header class="resident-header border-b border-outline-variant bg-surface-container-lowest flex items-center justify-end px-5 md:px-8 sticky top-0 z-40 w-full">
-<div class="flex items-center gap-4 w-full justify-end">
+<header class="resident-header border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-5 md:px-8 sticky top-0 z-40 w-full">
+<div class="flex items-center lg:hidden">
+  <a class="flex items-center gap-1 text-lg font-bold text-primary font-display" href="{% url 'home' %}">
+    <span class="material-symbols-outlined text-[20px]">location_city</span>CityWatch
+  </a>
+</div>
+<div class="flex items-center gap-4 justify-end flex-grow">
 <form method="GET" action="{% url 'public_board' %}" class="relative">
 <label class="sr-only" for="resident-search">Search reports or news</label>
 <input id="resident-search" name="q" value="{{ search_query|default:'' }}" type="search" placeholder="Search reports or news..." class="resident-search border border-outline-variant bg-background py-2 pl-10 pr-4 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-on-surface-variant">search</span>
 </form>
-<a href="{% url 'notification_list' %}" aria-label="Notifications" class="relative rounded-full p-2 text-on-surface-variant hover:bg-surface-container-low">
-<span class="material-symbols-outlined">notifications</span>
-{% if unread_notifications_count %}<span class="absolute right-1 top-1 min-w-4 h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">{{ unread_notifications_count }}</span>{% endif %}
-</a>
+<div class="relative" id="notification-dropdown-container">
+  <button id="notification-toggle" aria-label="Notifications" class="relative rounded-full p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors outline-none focus:ring-2 focus:ring-primary">
+    <span class="material-symbols-outlined">notifications</span>
+    {% if unread_notifications_count %}<span class="absolute right-1 top-1 min-w-4 h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">{{ unread_notifications_count }}</span>{% endif %}
+  </button>
+  
+  <div id="notification-menu" class="hidden absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-50 overflow-hidden origin-top-right">
+    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+      <h3 class="font-semibold text-sm text-on-surface font-display">Notifications</h3>
+      <a href="{% url 'notification_list' %}" class="text-xs text-primary hover:underline font-medium">View All</a>
+    </div>
+    <div class="max-h-80 overflow-y-auto">
+      {% if recent_notifications %}
+        <div class="flex flex-col">
+        {% for notif in recent_notifications %}
+          <a href="#spa-notifications" class="spa-link flex gap-3 p-4 border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors {% if not notif.is_read %}bg-primary-container/20{% endif %}">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 {% if not notif.is_read %}bg-primary text-on-primary{% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+              <span class="material-symbols-outlined text-sm">
+                {% if notif.notif_type == 'status_update' %}update
+                {% elif notif.notif_type == 'assignment' %}assignment
+                {% elif notif.notif_type == 'feedback_request' %}rate_review
+                {% else %}campaign{% endif %}
+              </span>
+            </div>
+            <div>
+              <p class="text-sm text-on-surface {% if not notif.is_read %}font-semibold{% endif %}">{{ notif.message }}</p>
+              <p class="text-[10px] text-on-surface-variant mt-1 {% if not notif.is_read %}text-primary{% endif %}">{{ notif.date_created|timesince }} ago</p>
+            </div>
+          </a>
+        {% endfor %}
+        </div>
+      {% else %}
+        <div class="p-8 flex flex-col items-center justify-center text-center text-on-surface-variant">
+          <span class="material-symbols-outlined text-4xl text-outline-variant mb-2 opacity-50">notifications_paused</span>
+          <p class="text-sm font-medium text-on-surface">You're all caught up</p>
+          <p class="text-xs mt-1 text-on-surface-variant/80">There are no new notifications.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('notification-toggle');
+    const menu = document.getElementById('notification-menu');
+    
+    if (toggle && menu) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
 <a class="flex items-center gap-2 text-sm font-semibold text-on-surface" href="{% url 'profile' %}">
 {% if request.user.profile.profile_picture %}
 <img class="resident-profile-image" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">

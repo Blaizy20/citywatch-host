@@ -1,29 +1,75 @@
-<style>.resident-sidebar { width: 256px; min-width: 256px; }</style>
-<aside class="resident-sidebar hidden lg:flex bg-surface-container-lowest border-r border-outline-variant flex-col sticky top-0 h-screen z-50 flex-shrink-0">
-<div class="p-6 border-b border-outline-variant">
-<a class="flex items-center gap-2 text-xl font-bold text-primary" href="{% url 'home' %}">
-<span class="material-symbols-outlined">location_city</span>CityWatch
+<aside id="resident-sidebar" data-collapsed="false" class="hidden lg:flex bg-surface-container-lowest border-r border-outline-variant flex-col sticky top-0 h-screen z-50 flex-shrink-0 transition-all duration-300 w-64 data-[collapsed=true]:w-20 overflow-hidden group/sidebar">
+<div class="p-4 border-b border-outline-variant flex group-data-[collapsed=false]/sidebar:items-center group-data-[collapsed=false]/sidebar:justify-between group-data-[collapsed=true]/sidebar:flex-col group-data-[collapsed=true]/sidebar:items-center group-data-[collapsed=true]/sidebar:gap-4 min-h-[73px] transition-all duration-300">
+<a class="flex items-center gap-2 text-xl font-bold text-primary overflow-hidden" href="{% url 'home' %}">
+<span class="material-symbols-outlined shrink-0 text-3xl">location_city</span>
+<span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">CityWatch</span>
 </a>
-<p class="text-xs text-on-surface-variant mt-2">Resident portal</p>
+<button id="sidebar-toggle" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center p-1 rounded-md hover:bg-surface-container-low shrink-0" title="Collapse/Expand">
+<span class="material-symbols-outlined text-[22px] group-data-[collapsed=true]/sidebar:rotate-180 transition-transform duration-300">menu_open</span>
+</button>
 </div>
-<nav class="flex-grow p-4 flex flex-col gap-2" aria-label="Resident navigation">
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'resident_dashboard' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'resident_dashboard' %}">
-<span class="material-symbols-outlined">dashboard</span>Dashboard</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'report_create' or request.resolver_match.url_name == 'report_edit' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'report_create' %}">
-<span class="material-symbols-outlined">add_circle</span>Submit Report</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'report_list' or request.resolver_match.url_name == 'report_detail' or request.resolver_match.url_name == 'report_delete' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'report_list' %}">
-<span class="material-symbols-outlined">folder_open</span>My Reports</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'public_board' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'public_board' %}">
-<span class="material-symbols-outlined">public</span>Public Board</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'announcements' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'announcements' %}">
-<span class="material-symbols-outlined">campaign</span>Announcements</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'notification_list' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'notification_list' %}">
-<span class="material-symbols-outlined">notifications</span>Notifications{% if unread_notifications_count %}<span class="ml-auto min-w-5 h-5 px-1 rounded-full bg-error text-white text-[10px] flex items-center justify-center">{{ unread_notifications_count }}</span>{% endif %}</a>
+<nav class="flex-grow p-3 flex flex-col gap-2 relative" aria-label="Resident navigation">
+<div id="nav-active-pill" class="absolute top-0 left-3 right-3 rounded-lg bg-primary-container/70 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 hidden border border-white/40 shadow-sm"></div>
+
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-overview" title="Dashboard">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">dashboard</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Dashboard</span></a>
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-submit" title="Submit Report">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">add_circle</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Submit Report</span></a>
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-my-reports" title="My Reports">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">folder_open</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">My Reports</span></a>
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-public-board" title="Public Board">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">public</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Public Board</span></a>
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-announcements" title="Announcements">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">campaign</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Announcements</span></a>
+<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-notifications" title="Notifications">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform relative">notifications{% if unread_notifications_count %}<span class="absolute -right-1 -top-1 min-w-3 h-3 rounded-full bg-error"></span>{% endif %}</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Notifications</span></a>
 </nav>
-<div class="p-4 border-t border-outline-variant flex flex-col gap-2">
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg {% if request.resolver_match.url_name == 'profile' %}bg-primary-container text-white{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-colors text-sm font-semibold" href="{% url 'profile' %}">
-<span class="material-symbols-outlined">settings</span>Settings</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-error hover:bg-error-container transition-colors text-sm font-semibold" href="{% url 'logout' %}">
-<span class="material-symbols-outlined">logout</span>Logout</a>
+<div class="p-3 border-t border-outline-variant flex flex-col gap-2">
+<a class="group flex items-center gap-3 px-3 py-3 rounded-lg {% if request.resolver_match.url_name == 'profile' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-all text-sm font-semibold" href="{% url 'profile' %}" title="Settings">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">settings</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Settings</span></a>
+<a class="group flex items-center gap-3 px-3 py-3 rounded-lg text-error hover:bg-error-container transition-all text-sm font-semibold" href="{% url 'logout' %}" title="Logout">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">logout</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Logout</span></a>
 </div>
 </aside>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('resident-sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    if(localStorage.getItem('sidebarCollapsed') === 'true') sidebar.setAttribute('data-collapsed', 'true');
+    if(toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+            const state = sidebar.getAttribute('data-collapsed') === 'true' ? 'false' : 'true';
+            sidebar.setAttribute('data-collapsed', state);
+            localStorage.setItem('sidebarCollapsed', state);
+        });
+    }
+});
+</script>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center h-[72px] z-50 px-2 pb-safe">
+  <a href="#spa-overview" class="spa-link flex flex-col items-center justify-center w-16 h-full gap-1 text-primary">
+    <div class="bg-primary-container text-on-primary-container px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">dashboard</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Home</span>
+  </a>
+  <a href="#spa-submit" class="spa-link flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">add_circle</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Report</span>
+  </a>
+  <a href="#spa-my-reports" class="spa-link flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">folder_open</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">My Reports</span>
+  </a>
+  <a href="#spa-public-board" class="spa-link flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">public</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Public</span>
+  </a>
+</nav>

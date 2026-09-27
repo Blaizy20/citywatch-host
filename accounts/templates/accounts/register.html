@@ -43,10 +43,40 @@
     .step-label.active { color: #156b3e; }
     @keyframes fadeInSlide { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
     .fade-in-slide { animation: fadeInSlide 0.3s ease-out forwards; }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cardPop { from { opacity: 0; transform: scale(0.85) translateY(24px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes checkDraw { 0% { stroke-dashoffset: 80; } 100% { stroke-dashoffset: 0; } }
+    @keyframes ringPulse { 0%, 100% { transform: scale(1); opacity: .4; } 50% { transform: scale(1.25); opacity: 0; } }
+    .success-overlay { animation: overlayIn 0.35s ease forwards; }
+    .success-card { animation: cardPop 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .check-svg { stroke-dasharray: 80; stroke-dashoffset: 80; animation: checkDraw 0.5s ease 0.45s forwards; }
+    .ring-pulse { animation: ringPulse 1.8s ease-in-out 0.6s infinite; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
 </head>
 <body class="bg-surface text-on-surface font-sans antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+
+  <!-- SUCCESS OVERLAY -->
+  <div id="success-overlay" class="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="success-card bg-surface rounded-3xl p-10 max-w-sm w-[90%] flex flex-col items-center text-center shadow-2xl">
+      <!-- Animated Check Icon -->
+      <div class="relative mb-6">
+        <div class="ring-pulse absolute inset-0 rounded-full bg-primary-container"></div>
+        <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center relative">
+          <svg class="w-10 h-10" viewBox="0 0 40 40" fill="none">
+            <polyline class="check-svg" points="8,21 17,30 33,13" stroke="#156b3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <h2 id="success-title" class="text-2xl font-display font-bold text-on-surface mb-2">Account Created!</h2>
+      <p class="text-on-surface-variant text-sm leading-relaxed mb-1">Welcome to CityWatch. Your resident account is ready.</p>
+      <p class="text-xs text-on-surface-variant/70 mb-8">Redirecting you to Login...</p>
+      <!-- Progress bar -->
+      <div class="w-full h-1 bg-outline-variant rounded-full overflow-hidden">
+        <div id="redirect-bar" class="h-full bg-primary rounded-full" style="width: 0%; transition: width 2.5s linear;"></div>
+      </div>
+    </div>
+  </div>
   <header class="w-full sticky top-0 bg-surface/90 backdrop-blur-md border-b border-outline-variant z-50">
     <div class="flex justify-between items-center h-14 px-5 max-w-7xl mx-auto">
       <a class="flex items-center gap-2 text-primary" href="{% url 'landing' %}"><span class="material-symbols-outlined">location_city</span><span class="text-xl font-bold">CityWatch</span></a>
@@ -548,10 +578,15 @@
         
         const data = await response.json();
         if (data.success) {
-          submitBtn.classList.remove('bg-primary', 'text-white', 'hover:opacity-90', 'hover:shadow-lg');
-          submitBtn.classList.add('bg-primary-container', 'text-on-primary-container', 'shadow-md');
-          submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Account created! Redirecting...</span>';
-          setTimeout(() => { window.location.href = data.redirect; }, 1500);
+          submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Redirecting...</span>';
+          // Show full-screen overlay
+          const overlay = document.getElementById('success-overlay');
+          overlay.classList.remove('hidden');
+          // Trigger reflow to start progress bar animation
+          const bar = document.getElementById('redirect-bar');
+          void bar.offsetWidth;
+          bar.style.width = '100%';
+          setTimeout(() => { window.location.href = data.redirect; }, 2800);
         } else {
           submitBtn.innerHTML = originalBtnContent;
           const msgContainer = document.getElementById('django-messages');

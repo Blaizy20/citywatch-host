@@ -7,24 +7,52 @@
 <title>Dashboard - CityWatch</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script>
-tailwind.config = { theme: { extend: {
-"colors": {
-"primary": "#002045", "on-primary": "#ffffff", "primary-container": "#1a365d",
-"on-primary-container": "#86a0cd", "secondary": "#0a6c44", "secondary-container": "#9ff5c1",
-"on-secondary-container": "#167249", "surface": "#f7fafc", "on-surface": "#181c1e",
-"on-surface-variant": "#43474e", "surface-container": "#ebeef0", "surface-container-low": "#f1f4f6",
-"surface-container-lowest": "#ffffff", "outline": "#74777f", "outline-variant": "#c4c6cf",
-"error": "#ba1a1a", "error-container": "#ffdad6", "tertiary-fixed": "#ffdeaa",
-"on-tertiary-fixed-variant": "#5f4100", "background": "#f7fafc"
-},
-"borderRadius": {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"}
-}}}
+tailwind.config = { 
+  theme: { 
+    extend: {
+      fontFamily: {
+        sans: ['"DM Sans"', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif']
+      },
+      colors: {
+        "primary": "#156b3e", "on-primary": "#ffffff", "primary-container": "#a0f3be",
+        "on-primary-container": "#002111", "secondary": "#004785", "on-secondary": "#ffffff", "secondary-container": "#d6e3ff",
+        "on-secondary-container": "#001b3f", "surface": "#fdfcff", "on-surface": "#1a1c1e",
+        "on-surface-variant": "#43474e", "surface-container": "#f3f4f9", "surface-container-low": "#f8f9fc",
+        "surface-container-lowest": "#ffffff", "outline": "#74777f", "outline-variant": "#c4c6cf",
+        "error": "#ba1a1a", "error-container": "#ffdad6", "on-error-container": "#93000a",
+        "background": "#f3f4f9", "on-background": "#1a1c1e",
+        "tertiary-fixed": "#ffdeaa", "on-tertiary-fixed-variant": "#5f4100"
+      },
+      borderRadius: { xl: '0.5rem', full: '0.75rem' }
+    }
+  }
+}
 </script>
-<style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .resident-sidebar { width: 256px; min-width: 256px; }
+  @media (max-width: 1023px) { .mobile-nav-pb { padding-bottom: 72px; } }
+  
+  @keyframes staggerSlideUp {
+    0% { opacity: 0; transform: translateY(20px) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-stagger > * {
+    opacity: 0;
+    animation: staggerSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 50ms; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 100ms; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 150ms; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 200ms; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 250ms; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+</style>
 </head>
-<body class="bg-background text-on-background font-body-md antialiased flex flex-col min-h-screen">
+<body class="bg-background text-on-background font-sans antialiased flex flex-col min-h-screen mobile-nav-pb">
 <div class="flex min-h-screen w-full">
 
 {% include 'reports/partials/resident_sidebar.html' %}
@@ -32,47 +60,55 @@ tailwind.config = { theme: { extend: {
 <div class="flex-grow flex flex-col min-w-0">
 {% include 'reports/partials/resident_header.html' %}
 
-<main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-16 py-8 md:py-12 flex flex-col gap-12">
-<section class="flex flex-col gap-4 max-w-4xl">
-<h1 class="text-4xl text-on-surface font-bold tracking-tight">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
+
+<main class="flex-grow max-w-7xl mx-auto w-full px-5 md:px-16 py-8 md:py-12 flex flex-col gap-12 relative">
+    <!-- Tab: Overview -->
+    <div id="spa-overview" class="spa-tab block w-full transition-opacity duration-300 animate-stagger">
+        <section class="flex flex-col gap-4 max-w-4xl">
+<h1 class="text-3xl md:text-4xl text-on-surface font-display font-bold tracking-tight">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
 <p class="text-lg text-on-surface-variant leading-relaxed">Stay informed about your neighborhood. Manage your civic reports, track community infrastructure updates, and read the latest announcements from your local barangay office.</p>
 </section>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Reports</span>
-<p class="text-3xl font-bold text-on-surface mt-2">{{ stats.total }}</p>
-</div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Pending</span>
-<p class="text-3xl font-bold text-on-surface mt-2">{{ stats.pending }}</p>
-</div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">In Progress</span>
-<p class="text-3xl font-bold text-on-surface mt-2">{{ stats.in_progress }}</p>
-</div>
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Resolved</span>
-<p class="text-3xl font-bold text-on-surface mt-2">{{ stats.resolved }}</p>
-</div>
-</div>
+<section class="mb-2">
+  <h2 class="sr-only">Report Statistics</h2>
+  <div class="flex flex-col md:flex-row gap-8 py-8 border-y-2 border-outline-variant/30">
+    <div class="md:w-1/3">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Contributions</p>
+      <div class="text-6xl md:text-7xl font-display font-bold tracking-tighter text-on-surface leading-none">{{ stats.total }}</div>
+    </div>
+    <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 pt-4 md:pt-0">
+      <div class="border-l-4 border-orange-500 pl-4 py-1">
+         <p class="text-sm font-medium text-on-surface-variant mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px] text-orange-500">pending_actions</span> Pending</p>
+         <p class="text-4xl font-display font-semibold text-on-surface">{{ stats.pending }}</p>
+      </div>
+      <div class="border-l-4 border-blue-500 pl-4 py-1">
+         <p class="text-sm font-medium text-on-surface-variant mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px] text-blue-500">engineering</span> In Progress</p>
+         <p class="text-4xl font-display font-semibold text-on-surface">{{ stats.in_progress }}</p>
+      </div>
+      <div class="border-l-4 border-primary pl-4 py-1">
+         <p class="text-sm font-medium text-on-surface-variant mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px] text-primary">check_circle</span> Resolved</p>
+         <p class="text-4xl font-display font-semibold text-on-surface">{{ stats.resolved }}</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-<section class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-<a class="group flex items-center gap-4 bg-primary text-on-primary border border-primary rounded-xl p-4 hover:bg-primary-container hover:shadow-md transition-all" href="{% url 'report_create' %}">
-<div class="w-10 h-10 rounded-lg bg-white/15 text-white flex-shrink-0 flex items-center justify-center group-hover:bg-white/25 transition-colors">
-<span class="material-symbols-outlined text-2xl">add_a_photo</span>
+<section class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+<a class="spa-link group flex items-center gap-4 bg-primary text-on-primary border border-primary rounded-xl p-4 hover:brightness-110 hover:-translate-y-1 hover:shadow-lg transition-all duration-300" href="#spa-submit">
+<div class="w-10 h-10 rounded-lg bg-white/15 text-white flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-2xl">report</span>
 </div>
 <div class="min-w-0">
-<h3 class="font-semibold">Submit New Report</h3>
-<p class="text-sm text-blue-100 truncate">File a new concern regarding infrastructure or safety.</p>
+<h2 class="font-semibold text-lg font-display">Submit New Report</h2>
+<p class="text-sm text-white/80 truncate">File a new concern regarding infrastructure or safety.</p>
 </div>
 </a>
-<a class="group flex items-center gap-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 hover:shadow-md hover:border-outline transition-all" href="{% url 'report_list' %}">
-<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex-shrink-0 flex items-center justify-center">
+<a class="spa-link group flex items-center gap-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-4 hover:shadow-md hover:border-outline hover:-translate-y-1 transition-all duration-300" href="#spa-my-reports">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
 <span class="material-symbols-outlined text-2xl">folder_open</span>
 </div>
 <div class="min-w-0">
-<h3 class="font-semibold text-on-surface">View My Reports</h3>
+<h2 class="font-semibold text-lg text-on-surface font-display">View My Reports</h2>
 <p class="text-sm text-on-surface-variant truncate">Check status and track resolution progress.</p>
 </div>
 </a>
@@ -81,22 +117,26 @@ tailwind.config = { theme: { extend: {
 <section id="community-board" class="flex flex-col gap-6">
 <div class="flex justify-between items-end border-b border-outline-variant pb-3">
 <div>
-<div class="flex items-center gap-3"><div class="bg-secondary-container text-on-secondary-container p-1.5 rounded-lg"><span class="material-symbols-outlined text-[20px]">campaign</span></div><h2 class="text-2xl text-on-surface font-semibold">Community Board</h2></div>
+<div class="flex items-center gap-3"><div class="bg-secondary-container text-on-secondary-container p-1.5 rounded-lg"><span class="material-symbols-outlined text-[20px]">campaign</span></div><h2 class="text-2xl text-on-surface font-semibold font-display">Community Board</h2></div>
 <p class="text-on-surface-variant mt-1 text-sm">News and advisories published by your local office.</p>
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 {% for announcement in announcements %}
-<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
 <div class="flex items-center justify-between gap-3 mb-2">
-<span class="text-xs font-semibold uppercase tracking-wider text-secondary">{{ announcement.get_announcement_type_display }}</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold tracking-wide uppercase">{{ announcement.get_announcement_type_display }}</span>
 <span class="text-xs text-on-surface-variant">{{ announcement.date_published|default:announcement.date_created|date:"M d, Y" }}</span>
 </div>
-<h3 class="text-lg font-semibold text-on-surface">{{ announcement.title }}</h3>
+<h3 class="text-lg font-semibold text-on-surface font-display">{{ announcement.title }}</h3>
 <p class="mt-2 text-sm text-on-surface-variant line-clamp-3">{{ announcement.content }}</p>
 </article>
 {% empty %}
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 text-center text-on-surface-variant md:col-span-2">No news or advisories have been published yet.</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant md:col-span-2 flex flex-col items-center">
+  <span class="material-symbols-outlined text-4xl mb-3 text-outline-variant">campaign</span>
+  <p>No news or advisories have been published yet.</p>
+  <p class="text-sm mt-1">Check back later for updates from your local office.</p>
+</div>
 {% endfor %}
 </div>
 </section>
@@ -104,22 +144,22 @@ tailwind.config = { theme: { extend: {
 <section class="flex flex-col gap-6">
 <div class="flex justify-between items-end border-b border-outline-variant pb-3">
 <div>
-<h2 class="text-2xl text-on-surface font-semibold">My Active Reports</h2>
+<div class="flex items-center gap-3"><div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg"><span class="material-symbols-outlined text-[20px]">report</span></div><h2 class="text-2xl text-on-surface font-semibold font-display">My Active Reports</h2></div>
 <p class="text-on-surface-variant mt-1 text-sm">Recent submissions needing attention or currently under review.</p>
 </div>
-<a class="text-sm text-primary hover:underline flex items-center gap-1" href="{% url 'report_list' %}">View All <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+<a class="spa-link text-sm text-primary hover:underline flex items-center gap-1" href="#spa-my-reports">View All <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
 </div>
 <div class="flex flex-col gap-4">
 {% for report in reports %}
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col gap-4 hover:shadow-sm transition-shadow">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
 <div class="flex items-start justify-between gap-4">
-<h3 class="text-xl text-on-surface leading-tight">{{ report.title }}</h3>
+<h3 class="text-xl text-on-surface leading-tight font-display font-semibold">{{ report.title }}</h3>
 {% if report.status == 'pending' %}
-<span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-tertiary-fixed text-on-tertiary-fixed-variant whitespace-nowrap">Pending</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 whitespace-nowrap">Pending</span>
 {% elif report.status == 'acknowledged' %}
-<span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800 whitespace-nowrap">Acknowledged</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 whitespace-nowrap">Acknowledged</span>
 {% elif report.status == 'in_progress' %}
-<span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-primary-container text-on-primary-container whitespace-nowrap">In Progress</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">In Progress</span>
 {% endif %}
 </div>
 <p class="text-on-surface-variant line-clamp-2">{{ report.description }}</p>
@@ -131,13 +171,322 @@ tailwind.config = { theme: { extend: {
 </div>
 {% empty %}
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant">
-No active reports. <a href="{% url 'report_create' %}" class="text-primary font-semibold hover:underline">Submit your first report</a>
+No active reports (resolved reports are hidden). <a href="#spa-submit" class="spa-link text-primary font-semibold hover:underline">Submit a new report</a>
 </div>
 {% endfor %}
 </div>
 </section>
+    </div>
+    <!-- Tab: Submit Report -->
+    <div id="spa-submit" class="spa-tab hidden w-full transition-opacity duration-300">
+        <div class="mb-6">
+<h1 class="text-3xl font-semibold text-primary mb-1">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
+<p class="text-on-surface-variant max-w-2xl">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
+</div>
 
+{% if messages %}
+{% for message in messages %}
+<div class="mb-4 p-3 rounded bg-error-container text-error text-sm">{{ message }}</div>
+{% endfor %}
+{% endif %}
+
+<form method="POST" action="{% url 'report_create' %}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+{% csrf_token %}
+{% if form.non_field_errors %}<div class="lg:col-span-12 rounded-lg bg-error-container p-3 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
+
+<div class="lg:col-span-8 flex flex-col gap-8">
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">category</span>
+</div>
+<h2 class="font-semibold text-primary">1. Issue Category</h2>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+{% for value, label in form.category.field.choices %}
+<label class="cursor-pointer">
+<input class="peer sr-only" name="category" type="radio" value="{{ value }}" {% if form.category.value == value %}checked{% endif %} {% if forloop.first %}required{% endif %}>
+<div class="border border-outline-variant rounded-lg p-3 text-center hover:bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary-fixed peer-checked:text-on-primary-fixed transition-all">
+<p class="text-sm">{{ label }}</p>
+</div>
+</label>
+{% endfor %}
+</div>
+{% if form.category.errors %}<p class="mt-2 text-xs text-error">{{ form.category.errors|striptags }}</p>{% endif %}
+</div>
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<h2 class="font-semibold text-primary">2. Description</h2>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="title">Brief Title</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="title" name="title" placeholder="e.g., Pothole on Main St." type="text" value="{{ form.title.value|default:'' }}" required>
+{% if form.title.errors %}<p class="mt-1 text-xs text-error">{{ form.title.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="description">Detailed Description</label>
+<textarea class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none" id="description" name="description" placeholder="Please describe the issue..." rows="4" required>{{ form.description.value|default:'' }}</textarea>
+{% if form.description.errors %}<p class="mt-1 text-xs text-error">{{ form.description.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="urgency">Urgency Level</label>
+<select class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="urgency" name="urgency">
+<option value="low" {% if form.urgency.value == 'low' %}selected{% endif %}>Low</option>
+<option value="medium" {% if form.urgency.value == 'medium' %}selected{% endif %}>Medium</option>
+<option value="high" {% if form.urgency.value == 'high' %}selected{% endif %}>High</option>
+</select>
+{% if form.urgency.errors %}<p class="mt-1 text-xs text-error">{{ form.urgency.errors|striptags }}</p>{% endif %}
+</div>
+</div>
+</div>
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+</div>
+<h2 class="font-semibold text-primary">3. Location</h2>
+</div>
+<div class="space-y-3">
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="barangay">Barangay</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="barangay" name="barangay" placeholder="e.g., Poblacion" type="text" value="{{ form.barangay.value|default:'' }}" required>
+{% if form.barangay.errors %}<p class="mt-1 text-xs text-error">{{ form.barangay.errors|striptags }}</p>{% endif %}
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="latitude">Latitude (optional)</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="latitude" name="latitude" placeholder="14.9563" type="text" value="{{ form.latitude.value|default:'' }}">
+{% if form.latitude.errors %}<p class="mt-1 text-xs text-error">{{ form.latitude.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label class="block text-sm font-medium text-on-surface mb-1" for="longitude">Longitude (optional)</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="longitude" name="longitude" placeholder="120.8964" type="text" value="{{ form.longitude.value|default:'' }}">
+{% if form.longitude.errors %}<p class="mt-1 text-xs text-error">{{ form.longitude.errors|striptags }}</p>{% endif %}
+</div>
+</div>
+<button id="use-location" type="button" class="inline-flex items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-primary hover:bg-surface-container-low"><span class="material-symbols-outlined text-base">my_location</span><span>Use Current Location</span></button>
+</div>
+</div>
+</div>
+
+<div class="lg:col-span-4 flex flex-col gap-8">
+
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="flex items-center gap-3 mb-4">
+<div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+</div>
+<h2 class="font-semibold text-primary">Photo</h2>
+</div>
+<label class="block border-2 border-dashed border-outline-variant rounded-xl p-6 text-center hover:bg-surface-container-low transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-3xl text-outline mb-1 block">cloud_upload</span>
+<p class="text-sm text-primary mb-0.5">Click to upload</p>
+<p class="text-xs text-on-surface-variant">Max. 5MB</p>
+<input type="file" name="photo" accept="image/*" class="hidden">
+{% if form.photo.errors %}<p class="mt-2 text-xs text-error">{{ form.photo.errors|striptags }}</p>{% endif %}
+<p id="photo-name" class="mt-2 text-xs text-on-surface-variant"></p>
+</label>
+</div>
+
+<div class="mt-2">
+<button class="w-full text-on-primary rounded-xl py-3 font-semibold transition-colors flex items-center justify-center gap-2 bg-primary hover:opacity-90" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span>
+{% if editing %}Update Report{% else %}Submit Report{% endif %}
+</button>
+<p class="text-center text-xs text-on-surface-variant mt-3">By submitting, you agree to our Terms.</p>
+</div>
+
+</div>
+</form>
+<script>
+const locationButton = document.getElementById('use-location');
+const photoInput = document.querySelector('input[name="photo"]');
+const photoName = document.getElementById('photo-name');
+locationButton.addEventListener('click', () => {
+	if (!navigator.geolocation) return;
+	locationButton.querySelector('span:last-child').textContent = 'Locating...';
+	navigator.geolocation.getCurrentPosition((position) => {
+		document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+		document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+		locationButton.querySelector('span:last-child').textContent = 'Location added';
+	}, () => { locationButton.querySelector('span:last-child').textContent = 'Location unavailable'; });
+});
+photoInput.addEventListener('change', () => { photoName.textContent = photoInput.files[0] ? photoInput.files[0].name : ''; });
+</script>
+    </div>
+    <!-- Tab: My Reports -->
+    <div id="spa-my-reports" class="spa-tab hidden w-full transition-opacity duration-300">
+
+<div class="flex-1 px-8 py-8 max-w-7xl mx-auto w-full">
+<div class="mb-8">
+<h1 class="text-3xl font-semibold text-primary mb-1">My Reports</h1>
+<p class="text-on-surface-variant">Track the status of your submitted civic issues.</p>
+</div>
+
+<div class="flex overflow-x-auto pb-4 mb-6 gap-2">
+<a href="{% url 'report_list' %}" class="px-6 py-2 rounded-full {% if not status_filter %}bg-primary text-on-primary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap">All Reports</a>
+<a href="?status=pending" class="px-6 py-2 rounded-full {% if status_filter == 'pending' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap">Pending</a>
+<a href="?status=in_progress" class="px-6 py-2 rounded-full {% if status_filter == 'in_progress' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap">In Progress</a>
+<a href="?status=resolved" class="px-6 py-2 rounded-full {% if status_filter == 'resolved' %}bg-primary text-on-primary{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap">Resolved</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+{% for report in reports %}
+<article class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+{% if report.photo %}
+<img alt="{{ report.title }}" class="w-full h-40 object-cover" src="{{ report.photo.url }}">
+{% else %}
+<div class="w-full h-40 bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-outline">image</span>
+</div>
+{% endif %}
+<div class="p-6 flex flex-col flex-1">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary-container text-on-primary-container text-xs mb-2">{{ report.get_category_display }}</span>
+<h3 class="text-lg font-semibold text-primary leading-tight">{{ report.title }}</h3>
+</div>
+{% if report.status == 'pending' %}
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-xs whitespace-nowrap">Pending</span>
+{% elif report.status == 'in_progress' %}
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary text-on-primary text-xs whitespace-nowrap">In Progress</span>
+{% elif report.status == 'resolved' %}
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-secondary text-white text-xs whitespace-nowrap">Resolved</span>
+{% else %}
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-gray-200 text-gray-800 text-xs whitespace-nowrap">{{ report.get_status_display }}</span>
+{% endif %}
+</div>
+<p class="text-sm text-on-surface-variant mb-6 line-clamp-2 flex-1">{{ report.description }}</p>
+<div class="flex justify-between items-end border-t border-surface-container pt-4 mt-auto">
+<div>
+<p class="text-xs text-outline">Report ID</p>
+<p class="text-sm text-on-surface font-medium">#CW-{{ report.id }}</p>
+</div>
+<a href="{% url 'report_detail' report.id %}" class="text-primary text-sm font-semibold hover:underline">View</a>
+</div>
+</div>
+</article>
+{% empty %}
+<div class="col-span-full text-center py-16 text-on-surface-variant">
+No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibold hover:underline">Submit one now</a>
+</div>
+{% endfor %}
+</div>
+
+</div>
+    </div>
+    <!-- Tab: Public Board -->
+    <div id="spa-public-board" class="spa-tab hidden w-full transition-opacity duration-300">
+        <div class="mx-auto max-w-7xl space-y-6">
+<div><h1 class="text-3xl font-semibold text-primary-dark">Community Transparency Board</h1><p class="mt-2 text-lg text-on-variant">View and track all community-reported issues and their current resolution status.</p></div>
+<section class="grid grid-cols-1 gap-6 md:grid-cols-3"><div class="flex flex-col justify-center rounded-xl border border-outline bg-white p-6"><h2 class="text-xs font-semibold uppercase tracking-wider text-on-variant">Total Issues Reported</h2><p class="mt-2 text-5xl font-bold text-primary">{{ total_reports }}</p></div><div class="flex flex-col justify-center rounded-xl border border-outline bg-white p-6"><h2 class="text-xs font-semibold uppercase tracking-wider text-on-variant">Resolved</h2><p class="mt-2 text-5xl font-bold text-secondary">{{ resolved_count }}</p></div><div class="flex flex-col justify-center rounded-xl border border-outline bg-white p-6"><h2 class="text-xs font-semibold uppercase tracking-wider text-on-variant">Avg. Resolution Time</h2><p class="mt-2 text-5xl font-bold text-primary">{{ average_resolution_days }} <span class="text-xl font-semibold text-on-variant">Days</span></p></div></section>
+<form method="GET" class="flex flex-col items-center justify-between gap-4 rounded-xl border border-outline bg-white p-4 md:flex-row"><div class="relative w-full md:w-96"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-variant">search</span><input name="q" value="{{ search_query }}" class="w-full rounded-lg border border-outline bg-surface px-10 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Search reports..." type="search"></div><div class="flex w-full flex-wrap gap-3 md:w-auto"><select name="status" onchange="this.form.submit()" class="rounded-lg border border-outline bg-surface p-2 text-sm"><option value="">All Statuses</option><option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option><option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option><option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option></select><select name="category" onchange="this.form.submit()" class="rounded-lg border border-outline bg-surface p-2 text-sm"><option value="">All Categories</option><option value="road" {% if category_filter == 'road' %}selected{% endif %}>Road</option><option value="streetlight" {% if category_filter == 'streetlight' %}selected{% endif %}>Streetlight</option><option value="drainage" {% if category_filter == 'drainage' %}selected{% endif %}>Drainage/Flooding</option><option value="facility" {% if category_filter == 'facility' %}selected{% endif %}>Public Facility</option></select></div></form>
+<section class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{% for report in reports %}<article class="flex flex-col overflow-hidden rounded-xl border border-outline bg-white transition-shadow hover:shadow-md"><div class="relative h-48 overflow-hidden bg-surface-high">{% if report.photo %}<img class="h-full w-full object-cover" src="{{ report.photo.url }}" alt="{{ report.title }}">{% else %}<div class="flex h-full items-center justify-center"><span class="material-symbols-outlined text-4xl text-outline">image</span></div>{% endif %}{% if report.status == 'pending' %}<span class="absolute right-4 top-4 rounded-full bg-warning-container px-3 py-1 text-xs font-semibold text-warning">Pending</span>{% elif report.status == 'in_progress' %}<span class="absolute right-4 top-4 rounded-full bg-primary-container px-3 py-1 text-xs font-semibold text-white">In Progress</span>{% elif report.status == 'resolved' %}<span class="absolute right-4 top-4 rounded-full bg-secondary-container px-3 py-1 text-xs font-semibold text-secondary">Resolved</span>{% endif %}</div><div class="flex flex-1 flex-col p-5"><div class="mb-2 flex items-center justify-between gap-2"><span class="font-mono text-xs text-on-variant">#CW-{{ report.id }}</span><span class="rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-primary">{{ report.get_category_display }}</span></div><h2 class="mb-3 flex-1 text-lg font-semibold">{{ report.title }}</h2><div class="space-y-2 text-xs text-on-variant"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-base">location_on</span>{{ report.barangay }}</div><div class="flex items-center gap-2"><span class="material-symbols-outlined text-base">calendar_today</span>Reported: {{ report.date_submitted|date:'M d, Y' }}</div></div></div></article>{% empty %}<div class="col-span-full rounded-xl border border-outline bg-white p-16 text-center text-on-variant">No reports match your filters.</div>{% endfor %}</section>
++</div>
+    </div>
+    <!-- Tab: Announcements -->
+    <div id="spa-announcements" class="spa-tab hidden w-full transition-opacity duration-300">
+        <div class="mx-auto max-w-7xl">
+<div class="mb-8"><h1 class="text-3xl font-semibold text-primary">Announcements and News</h1><p class="mt-2 max-w-3xl text-lg text-on-variant">Stay informed about the latest updates, events, and advisories from your local barangay office.</p></div>
+{% with featured=announcements|first %}{% if featured %}<section class="group relative mb-12 overflow-hidden rounded-xl border border-outline bg-white shadow-sm"><div class="h-64 bg-primary-container md:h-96"><div class="flex h-full items-center justify-center bg-gradient-to-br from-primary-container to-primary text-white"><span class="material-symbols-outlined text-8xl opacity-30">campaign</span></div></div><div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-24 text-white md:p-8 md:pt-32"><span class="mb-3 inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold uppercase tracking-wider">{{ featured.get_announcement_type_display }}</span><h2 class="max-w-3xl text-2xl font-semibold md:text-3xl">{{ featured.title }}</h2><p class="mt-2 max-w-2xl text-sm text-slate-200 md:text-base">{{ featured.content|truncatewords:35 }}</p><p class="mt-4 flex items-center gap-2 text-xs text-slate-300"><span class="material-symbols-outlined text-base">calendar_today</span>{{ featured.date_published|default:featured.date_created|date:'M d, Y' }}</p></div></section>{% endif %}{% endwith %}
+<div class="mb-6 flex flex-wrap items-center gap-2 border-b border-outline pb-4"><a class="rounded-full px-4 py-2 text-sm font-semibold {% if not announcement_type %}bg-primary-container text-white{% else %}bg-surface-high text-slate-900{% endif %}" href="{% url 'announcements' %}">All Updates</a><a class="rounded-full px-4 py-2 text-sm font-semibold {% if announcement_type == 'advisory' %}bg-primary-container text-white{% else %}bg-surface-high text-slate-900{% endif %}" href="{% url 'announcements' %}?type=advisory">Advisories</a><a class="rounded-full px-4 py-2 text-sm font-semibold {% if announcement_type == 'news' %}bg-primary-container text-white{% else %}bg-surface-high text-slate-900{% endif %}" href="{% url 'announcements' %}?type=news">News</a></div>
+<div class="grid grid-cols-1 gap-6 pb-12 md:grid-cols-2 lg:grid-cols-3">{% for announcement in announcements %}<article class="group flex flex-col overflow-hidden rounded-xl border border-outline bg-white transition-shadow hover:shadow-md"><div class="flex h-48 items-center justify-center bg-surface-high text-primary"><span class="material-symbols-outlined text-7xl opacity-20">{% if announcement.announcement_type == 'advisory' %}warning{% else %}campaign{% endif %}</span><span class="absolute ml-28 mt-[-7rem] rounded bg-{% if announcement.announcement_type == 'advisory' %}warning-container text-warning{% else %}secondary-container text-secondary{% endif %} px-2 py-1 text-xs font-semibold">{{ announcement.get_announcement_type_display }}</span></div><div class="flex flex-1 flex-col p-5"><p class="mb-3 flex items-center gap-2 text-xs text-on-variant"><span class="material-symbols-outlined text-base">schedule</span>{{ announcement.date_published|default:announcement.date_created|date:'M d, Y' }}</p><h2 class="mb-2 text-xl font-semibold text-slate-900 group-hover:text-primary">{{ announcement.title }}</h2><p class="mb-4 flex-1 text-sm leading-relaxed text-on-variant">{{ announcement.content|truncatewords:35 }}</p><div class="border-t border-outline pt-3 text-sm font-semibold text-primary">Read more <span class="material-symbols-outlined align-middle text-base">arrow_forward</span></div></div></article>{% empty %}<div class="col-span-full rounded-xl border border-outline bg-white p-12 text-center text-on-variant">No published announcements yet.</div>{% endfor %}</div>
++</div>
+    </div>
+    <!-- Tab: Notifications -->
+    <div id="spa-notifications" class="spa-tab hidden w-full transition-opacity duration-300">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-7">
+<div><p class="text-sm font-semibold uppercase tracking-wider text-secondary">Resident center</p><h1 class="text-3xl font-bold text-primary mt-1">Notifications</h1><p class="text-on-surface-variant mt-2">Stay updated on your reports, assignments, and community announcements.</p></div>
+{% if unread_notifications_count %}<form method="POST" action="{% url 'mark_all_read' %}">{% csrf_token %}<button class="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low" type="submit"><span class="material-symbols-outlined text-lg">done_all</span>Mark all as read</button></form>{% endif %}
+</div>
+<div class="space-y-3">
+{% for notification in notifications %}
+<article class="bg-surface-container-lowest border {% if not notification.is_read %}border-primary/40{% else %}border-outline-variant{% endif %} rounded-xl p-5">
+<div class="flex gap-4 items-start"><div class="w-10 h-10 rounded-full {% if not notification.is_read %}bg-primary-container text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %} flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined">{% if notification.notif_type == 'status_update' %}update{% elif notification.notif_type == 'assignment' %}assignment{% elif notification.notif_type == 'feedback_request' %}rate_review{% else %}campaign{% endif %}</span></div><div class="min-w-0 flex-1"><div class="flex flex-wrap justify-between gap-2"><p class="text-xs uppercase tracking-wider font-bold text-secondary">{{ notification.get_notif_type_display }}</p><time class="text-xs text-on-surface-variant">{{ notification.date_created|date:'M d, Y g:i A' }}</time></div><p class="text-sm mt-2 {% if not notification.is_read %}font-semibold{% endif %}">{{ notification.message }}</p><div class="flex flex-wrap gap-3 mt-4"><form method="POST" action="{% url 'toggle_read' notification.id %}">{% csrf_token %}<button class="text-xs font-bold text-primary hover:underline" type="submit">{% if notification.is_read %}Mark as unread{% else %}Mark as read{% endif %}</button></form>{% if notification.report %}<a class="text-xs font-bold text-primary hover:underline" href="{% url 'report_detail' notification.report.id %}">View report</a>{% endif %}</div></div></div>
+</article>
+{% empty %}<div class="bg-surface-container-lowest border border-dashed border-outline rounded-xl p-12 text-center"><span class="material-symbols-outlined text-4xl text-outline">notifications_none</span><h2 class="font-bold mt-3">You're all caught up</h2><p class="text-sm text-on-surface-variant mt-1">New report updates and community announcements will appear here.</p></div>{% endfor %}
+</div>
+    </div>
 </main>
+
+<script>
+function navigateSpa() {
+    const hash = window.location.hash || '#spa-overview';
+    const tabs = document.querySelectorAll('.spa-tab');
+    const links = document.querySelectorAll('.spa-link');
+    const activePill = document.getElementById('nav-active-pill');
+    
+    // Hide all tabs and reset animation states
+    tabs.forEach(tab => {
+        tab.classList.remove('block', 'opacity-100', 'translate-y-0');
+        tab.classList.add('hidden', 'opacity-0', 'translate-y-4', 'transition-all', 'duration-300', 'ease-out');
+    });
+    
+    let activeTab = document.querySelector(hash);
+    if (!activeTab) {
+        activeTab = document.getElementById('spa-overview');
+    }
+    
+    // Show active tab and trigger animation
+    if (activeTab) {
+        activeTab.classList.remove('hidden');
+        // Force reflow
+        void activeTab.offsetWidth;
+        activeTab.classList.add('block');
+        requestAnimationFrame(() => {
+            activeTab.classList.remove('opacity-0', 'translate-y-4');
+            activeTab.classList.add('opacity-100', 'translate-y-0');
+        });
+    }
+    
+    // Liquid glass navigation and mobile nav updates
+    links.forEach(link => {
+        const isDesktopNav = link.closest('nav[aria-label="Resident navigation"]') !== null;
+        const isActive = link.getAttribute('href') === hash || (hash === '#spa-overview' && link.getAttribute('href') === '#spa-overview');
+        
+        if (isActive) {
+            if (isDesktopNav && activePill) {
+                // Liquid glass pill logic
+                activePill.classList.remove('hidden');
+                activePill.style.transform = `translateY(${link.offsetTop}px)`;
+                activePill.style.height = `${link.offsetHeight}px`;
+                link.classList.add('text-on-primary-container');
+                link.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-low');
+            } else if (!isDesktopNav) {
+                // Mobile nav logic
+                link.classList.add('text-primary');
+                link.classList.remove('text-on-surface-variant');
+                const iconDiv = link.querySelector('div');
+                if (iconDiv) iconDiv.classList.add('bg-primary-container', 'text-on-primary-container');
+            }
+        } else {
+            if (isDesktopNav) {
+                link.classList.remove('text-on-primary-container');
+                link.classList.add('text-on-surface-variant', 'hover:bg-surface-container-low');
+            } else {
+                link.classList.remove('text-primary');
+                link.classList.add('text-on-surface-variant');
+                const iconDiv = link.querySelector('div');
+                if (iconDiv) iconDiv.classList.remove('bg-primary-container', 'text-on-primary-container');
+            }
+        }
+    });
+}
+
+window.addEventListener('hashchange', navigateSpa);
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure layout is calculated before placing the pill
+    setTimeout(navigateSpa, 50);
+});
+</script>
+
 </div>
 </div>
 </body>

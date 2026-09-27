@@ -10,4 +10,7 @@ def notification_context(request):
             user=request.user,
             is_read=False,
         ).count(),
+        'recent_notifications': Notification.objects.filter(
+            user=request.user
+        ).order_by('-date_created')[:5]
     }
