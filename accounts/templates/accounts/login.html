@@ -8,28 +8,41 @@
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet">
   <script>
-    tailwind.config = { theme: { extend: { colors: {
-      primary: '#002045', secondary: '#0a6c44', surface: '#f7fafc',
-      'surface-container': '#ebeef0', 'surface-container-low': '#f1f4f6',
-      'surface-container-lowest': '#ffffff', 'on-surface': '#181c1e',
-      'on-surface-variant': '#43474e', 'outline-variant': '#c4c6cf',
-      error: '#ba1a1a', 'error-container': '#ffdad6', 'on-error-container': '#93000a'
-    }, borderRadius: { xl: '0.5rem', full: '0.75rem' } } } };
+  tailwind.config = { 
+    theme: { 
+      extend: {
+        fontFamily: {
+          sans: ['"DM Sans"', 'sans-serif'],
+          display: ['"Outfit"', 'sans-serif']
+        },
+        colors: {
+          "primary": "#156b3e", "on-primary": "#ffffff", "primary-container": "#a0f3be",
+          "on-primary-container": "#002111", "secondary": "#004785", "on-secondary": "#ffffff", "secondary-container": "#d6e3ff",
+          "on-secondary-container": "#001b3f", "surface": "#fdfcff", "on-surface": "#1a1c1e",
+          "on-surface-variant": "#43474e", "surface-container": "#f3f4f9", "surface-container-low": "#f8f9fc",
+          "surface-container-lowest": "#ffffff", "outline": "#74777f", "outline-variant": "#c4c6cf",
+          "error": "#ba1a1a", "error-container": "#ffdad6", "on-error-container": "#93000a"
+        },
+        borderRadius: { xl: '0.5rem', full: '0.75rem' }
+      }
+    }
+  }
   </script>
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .form-animate { animation: fadeInUp .7s ease forwards; }
-    .gradient-shimmer { background: linear-gradient(135deg, #002045 0%, #1a365d 55%, #0a6c44 100%); background-size: 200% 200%; animation: shimmer 10s ease infinite; }
-    @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-    .trust-bg-icon { position: absolute; bottom: -60px; right: -60px; font-size: 340px; color: rgba(255,255,255,.06); pointer-events: none; }
-    @media (prefers-reduced-motion: reduce) { .form-animate, .gradient-shimmer { animation: none !important; } }
+    @keyframes kenBurns { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+    .animate-ken-burns { animation: kenBurns 40s ease-in-out infinite alternate; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
+    @media (prefers-reduced-motion: reduce) { .form-animate, .animate-ken-burns, .animate-shake { animation: none !important; transform: none !important; } }
   </style>
 </head>
-<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+<body class="bg-surface text-on-surface font-sans antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
   <header class="w-full sticky top-0 bg-surface/90 backdrop-blur-md border-b border-outline-variant z-50">
     <div class="flex justify-between items-center h-14 px-5 max-w-7xl mx-auto">
       <a class="flex items-center gap-2 text-primary" href="{% url 'landing' %}"><span class="material-symbols-outlined">location_city</span><span class="text-xl font-bold">CityWatch</span></a>
@@ -38,20 +51,70 @@
   </header>
 
   <main class="flex-1 flex flex-col lg:flex-row w-full min-h-[calc(100vh-64px)]">
-    <div class="hidden lg:flex w-full lg:w-1/2 relative flex-shrink-0 overflow-hidden items-end gradient-shimmer">
-      <span class="material-symbols-outlined trust-bg-icon">verified_user</span><div class="absolute inset-0 bg-black/10"></div>
-      <div class="relative z-10 p-14 text-white w-full max-w-lg"><span class="inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full text-xs font-semibold mb-5 border border-white/20"><span class="material-symbols-outlined text-[16px]">shield_person</span>Official Resident Portal</span><h1 class="text-4xl font-semibold mb-3 leading-tight">Welcome back to<br>your city.</h1><p class="text-base text-white/85 leading-relaxed mb-10 max-w-sm">Sign in to report concerns, follow up on open cases, and see what's happening across Baliwag.</p><div class="grid grid-cols-3 gap-4 max-w-sm"><div><p class="text-2xl font-extrabold">27</p><p class="text-xs text-white/70 mt-0.5">Barangays</p></div><div><p class="text-2xl font-extrabold">175K+</p><p class="text-xs text-white/70 mt-0.5">Residents</p></div><div><p class="text-2xl font-extrabold">24/7</p><p class="text-xs text-white/70 mt-0.5">Reporting</p></div></div></div>
+    <div class="hidden lg:flex w-full lg:w-1/2 relative flex-shrink-0 overflow-hidden flex-col justify-center p-12 bg-primary">
+      <div class="w-full max-w-2xl mx-auto flex flex-col items-center">
+        <!-- Logo Header -->
+        <div class="flex flex-col items-center mb-12 text-center">
+          <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl ring-1 ring-inset ring-white/20 shadow-2xl flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-4xl text-white drop-shadow-sm">location_city</span>
+          </div>
+          <h2 class="text-4xl font-display font-bold text-white tracking-tight drop-shadow-md mb-4">CityWatch</h2>
+          <p class="text-white/80 text-lg leading-relaxed max-w-md">Bridging the gap between citizens and local government. Report civic issues, track real-time progress, and help us build a more responsive city together.</p>
+        </div>
+        
+        <div class="w-full relative">
+          <div class="flex items-center justify-center mb-6 px-2">
+            <div class="flex items-center gap-2">
+              <span class="flex h-2.5 w-2.5 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-container"></span>
+              </span>
+              <span class="text-xs font-semibold text-white/90 uppercase tracking-widest">Community Updates</span>
+            </div>
+          </div>
+          
+          <!-- Draggable Gallery -->
+          <div id="activity-gallery" class="flex overflow-x-auto snap-x snap-mandatory pb-6 w-full cursor-grab active:cursor-grabbing" style="scrollbar-width: none;">
+            {% for report in recent_reports %}
+            <div class="snap-center shrink-0 w-full min-w-full px-4">
+              <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover:bg-black/30 transition-colors duration-300 flex flex-col h-full mx-auto max-w-sm">
+                <div class="flex justify-between items-start mb-4">
+                  {% if report.status == 'resolved' %}
+                  <span class="inline-flex items-center gap-1.5 bg-[#6ee7b7]/20 px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#6ee7b7] uppercase tracking-wide border border-[#6ee7b7]/20">
+                    <span class="material-symbols-outlined text-[14px]">check_circle</span>Resolved
+                  </span>
+                  {% elif report.status == 'in_progress' %}
+                  <span class="inline-flex items-center gap-1.5 bg-[#fcd34d]/20 px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#fcd34d] uppercase tracking-wide border border-[#fcd34d]/20">
+                    <span class="material-symbols-outlined text-[14px]">engineering</span>In Progress
+                  </span>
+                  {% else %}
+                  <span class="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white/90 uppercase tracking-wide border border-white/20">
+                    <span class="material-symbols-outlined text-[14px]">pending</span>Pending
+                  </span>
+                  {% endif %}
+                  <span class="text-[11px] font-medium text-white/60">{{ report.date_submitted|timesince }}</span>
+                </div>
+                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">{{ report.title }}</h4>
+                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">{{ report.description }}</p>
+              </div>
+            </div>
+            {% empty %}
+            <p class="text-white/60 text-sm pl-2">No recent activity.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="w-full lg:w-1/2 flex items-center justify-center bg-surface-container-lowest p-8 md:p-12 lg:px-24"><div class="form-animate w-full max-w-sm py-12 lg:py-0">
       <div class="lg:hidden flex flex-col items-center mb-8"><span class="material-symbols-outlined text-primary text-[40px] mb-2">location_city</span><span class="text-xl font-bold text-primary">CityWatch</span></div>
-      <div class="mb-8"><h2 class="text-2xl lg:text-3xl font-semibold">Sign in</h2><p class="text-base text-on-surface-variant mt-1">Enter your account details to continue.</p></div>
-      {% if messages %}{% for message in messages %}<div class="mb-5 p-3 rounded-xl bg-error-container text-on-error-container text-sm">{{ message }}</div>{% endfor %}{% endif %}
-      <form method="POST" class="space-y-5">{% csrf_token %}
-        <div class="space-y-1.5"><label class="block text-xs font-medium" for="username">Username</label><div class="relative"><div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><span class="material-symbols-outlined text-gray-500 text-[20px]">badge</span></div><input autocomplete="username" class="block w-full pl-11 pr-3 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" id="username" name="username" placeholder="Enter your username" required type="text"></div></div>
-        <div class="space-y-1.5"><label class="block text-xs font-medium" for="password">Password</label><div class="relative"><div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><span class="material-symbols-outlined text-gray-500 text-[20px]">lock</span></div><input autocomplete="current-password" class="block w-full pl-11 pr-12 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" id="password" name="password" placeholder="••••••••" required type="password"><button type="button" id="toggle-password" class="absolute inset-y-0 right-0 px-3.5 text-on-surface-variant hover:text-primary" aria-label="Show password"><span class="material-symbols-outlined text-[20px]">visibility</span></button></div></div>
+      <div class="mb-8"><h2 class="text-2xl lg:text-3xl font-display font-bold text-on-surface">Login</h2><p class="text-base text-on-surface-variant mt-1">Enter your account details to continue.</p></div>
+      <form id="login-form" method="POST" class="space-y-5">{% csrf_token %}
+        <div class="space-y-1.5"><label class="block text-xs font-medium" for="username">Username</label><div class="relative"><div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><span class="material-symbols-outlined text-gray-500 text-[20px]">badge</span></div><input autocomplete="username" class="block w-full pl-11 pr-3 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="username" name="username" placeholder="Enter your username" required type="text"></div></div>
+        <div class="space-y-1.5"><label class="block text-xs font-medium" for="password">Password</label><div class="relative"><div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><span class="material-symbols-outlined text-gray-500 text-[20px]">lock</span></div><input autocomplete="current-password" class="block w-full pl-11 pr-12 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="password" name="password" placeholder="••••••••" required type="password"><button type="button" id="toggle-password" class="absolute inset-y-0 right-0 px-3.5 text-on-surface-variant hover:text-primary" aria-label="Show password"><span class="material-symbols-outlined text-[20px]">visibility</span></button></div></div>
+        <p id="login-error-msg" class="text-error text-sm font-medium flex items-center gap-1 hidden"><span class="material-symbols-outlined text-[18px]">error</span> Incorrect username or password.</p>
         <div class="flex items-center justify-between"><label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer"><input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" name="remember_me" type="checkbox">Remember me</label><a class="text-sm text-primary font-medium hover:underline" href="#">Forgot password?</a></div>
-        <button class="w-full min-h-[46px] py-3 bg-primary text-white rounded-full font-semibold text-sm hover:opacity-90 hover:shadow-lg transition-all flex justify-center items-center gap-2" type="submit"><span>Sign In</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
+        <button id="login-submit-btn" class="w-full min-h-[46px] py-3 bg-primary text-white rounded-full font-semibold text-sm hover:opacity-90 hover:shadow-lg transition-all flex justify-center items-center gap-2" type="submit"><span>Login</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
         <p class="flex items-center justify-center gap-1.5 text-xs text-on-surface-variant pt-1"><span class="material-symbols-outlined text-[14px]">lock</span>Secure sign-in for verified residents</p>
       </form>
       <div class="mt-8 pt-6 border-t border-outline-variant/60 text-center"><p class="text-sm text-on-surface-variant">New to CityWatch? <a class="text-primary font-semibold hover:underline ml-1" href="{% url 'register' %}">Create an account</a></p></div>
@@ -62,6 +125,82 @@
   <script>
     const passwordInput = document.getElementById('password'); const togglePassword = document.getElementById('toggle-password'); const passwordIcon = togglePassword.querySelector('.material-symbols-outlined');
     togglePassword.addEventListener('click', () => { const isHidden = passwordInput.type === 'password'; passwordInput.type = isHidden ? 'text' : 'password'; togglePassword.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password'); passwordIcon.textContent = isHidden ? 'visibility_off' : 'visibility'; });
+
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+    const submitBtn = document.getElementById('login-submit-btn');
+    
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      usernameInput.classList.remove('border-error', 'text-error', 'ring-1', 'ring-error', 'animate-shake');
+      passwordInput.classList.remove('border-error', 'text-error', 'ring-1', 'ring-error', 'animate-shake');
+      document.getElementById('login-error-msg').classList.add('hidden');
+      
+      const originalBtnContent = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Authenticating...</span>';
+      
+      const formData = new FormData(loginForm);
+      try {
+        const response = await fetch(window.location.href, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          submitBtn.classList.remove('bg-primary', 'text-white', 'hover:opacity-90');
+          submitBtn.classList.add('bg-primary-container', 'text-on-primary-container', 'shadow-md');
+          submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Success! Redirecting...</span>';
+          setTimeout(() => { window.location.href = data.redirect; }, 800);
+        } else {
+          submitBtn.innerHTML = originalBtnContent;
+          usernameInput.classList.add('border-error', 'text-error', 'ring-1', 'ring-error', 'animate-shake');
+          passwordInput.classList.add('border-error', 'text-error', 'ring-1', 'ring-error', 'animate-shake');
+          document.getElementById('login-error-msg').classList.remove('hidden');
+          
+          setTimeout(() => {
+            usernameInput.classList.remove('animate-shake');
+            passwordInput.classList.remove('animate-shake');
+          }, 400);
+        }
+      } catch (err) {
+        submitBtn.innerHTML = originalBtnContent;
+        console.error('Login error', err);
+      }
+    });
+
+    const gallery = document.getElementById('activity-gallery');
+    if (gallery) {
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+      
+      gallery.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - gallery.offsetLeft; scrollLeft = gallery.scrollLeft; });
+      gallery.addEventListener('mouseleave', () => { isDown = false; });
+      gallery.addEventListener('mouseup', () => { isDown = false; });
+      gallery.addEventListener('mousemove', (e) => {
+        if(!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - gallery.offsetLeft;
+        const walk = (x - startX) * 2;
+        gallery.scrollLeft = scrollLeft - walk;
+      });
+
+      setInterval(() => {
+        if(!isDown) {
+          if (gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 10) {
+            gallery.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            gallery.scrollBy({ left: gallery.clientWidth, behavior: 'smooth' });
+          }
+        }
+      }, 4000);
+    }
   </script>
 </body>
 </html>

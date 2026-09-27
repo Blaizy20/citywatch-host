@@ -33,6 +33,10 @@ def landing_view(request):
 
 
 def register_view(request):
+    from reports.models import Report
+    from django.http import JsonResponse
+    recent_reports = Report.objects.all().order_by('-date_submitted')[:4]
+
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
@@ -46,23 +50,33 @@ def register_view(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
         if password != confirm_password:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Passwords do not match.'})
             messages.error(request, 'Passwords do not match')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'recent_reports': recent_reports})
 
         try:
             validate_password(password)
         except ValidationError as error:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': ' '.join(error.messages)})
             messages.error(request, ' '.join(error.messages))
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'recent_reports': recent_reports})
 
         if User.objects.filter(username=username).exists():
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Username already taken.'})
             messages.error(request, 'Username already taken')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'recent_reports': recent_reports})
 
         if User.objects.filter(email=email).exists():
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Email already registered.'})
             messages.error(request, 'Email already registered')
-            return render(request, 'accounts/register.html')
+            return render(request, 'accounts/register.html', {'recent_reports': recent_reports})
 
         user = User.objects.create_user(username=username, email=email, password=password)
         user.first_name = first_name
@@ -79,26 +93,38 @@ def register_view(request):
             address=address,
         )
 
+        if is_ajax:
+            from django.urls import reverse
+            return JsonResponse({'success': True, 'redirect': reverse('login')})
+
         messages.success(request, 'Account created successfully. Please log in.')
         return redirect('login')
 
-    return render(request, 'accounts/register.html')
+    return render(request, 'accounts/register.html', {'recent_reports': recent_reports})
 
 
 def login_view(request):
+    from reports.models import Report
+    from django.urls import reverse
+    from django.http import JsonResponse
+
+    recent_reports = Report.objects.all().order_by('-date_submitted')[:4]
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            if user.is_staff or user.is_superuser:
-                return redirect('analytics_dashboard')
-            else:
-                return redirect('resident_dashboard')
+            url = reverse('analytics_dashboard') if (user.is_staff or user.is_superuser) else reverse('resident_dashboard')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect': url})
+            return redirect(url)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False})
             messages.error(request, 'Invalid username or password')
-    return render(request, 'accounts/login.html')
+    return render(request, 'accounts/login.html', {'recent_reports': recent_reports})
 
 
 def logout_view(request):
