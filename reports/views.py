@@ -78,16 +78,22 @@ def resident_dashboard(request):
         )
     public_reports = public_reports.order_by('-date_submitted')[:20]
     
+    announcement_type = request.GET.get('type', '').strip()
     all_announcements = Announcement.objects.filter(is_published=True).order_by('-date_published')
+    if announcement_type:
+        all_announcements = all_announcements.filter(announcement_type=announcement_type)
     
     from notifications.models import Notification
     all_notifications = Notification.objects.filter(user=request.user).order_by('-date_created')
+    
+    from accounts.models import Profile
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
     return render(request, 'reports/dashboard.html', {
         'reports': reports, # All my reports for the My Reports tab
         'active_reports': active_reports, # Just the 5 active ones for the Overview tab
         'stats': stats,
-        'announcements': all_announcements[:4], # Overview announcements
+        'announcements': all_announcements[:4] if not announcement_type else all_announcements[:4], # Overview announcements
         'all_announcements': all_announcements, # Announcements tab
         'public_reports': public_reports, # Public board tab
         'public_total': Report.objects.count(),
@@ -97,6 +103,8 @@ def resident_dashboard(request):
         'search_query': search_query,
         'status_filter': status_filter,
         'category_filter': category_filter,
+        'announcement_type': announcement_type,
+        'profile': profile,
     })
 
 

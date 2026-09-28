@@ -141,6 +141,17 @@ def profile_view(request):
         if request.FILES.get('profile_picture'):
             profile.profile_picture = request.FILES['profile_picture']
         profile.save()
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({
+                'success': True,
+                'message': 'Profile updated successfully.',
+                'phone_number': profile.phone_number,
+                'barangay': profile.barangay,
+                'profile_picture_url': profile.profile_picture.url if profile.profile_picture else None
+            })
+            
         messages.success(request, 'Profile updated successfully')
     return render(request, 'accounts/profile.html', {'profile': profile})
 

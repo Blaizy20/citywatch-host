@@ -342,9 +342,11 @@
 <div class="relative" id="profile-dropdown-container">
   <button id="profile-toggle" class="flex items-center gap-2 text-sm font-semibold text-on-surface rounded-full hover:bg-surface-container-low p-1 pr-3 transition-colors outline-none focus:ring-2 focus:ring-primary">
     {% if request.user.profile.profile_picture %}
-    <img class="resident-profile-image" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">
+    <img class="resident-profile-image user-avatar" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">
+    <span class="material-symbols-outlined text-3xl text-on-surface-variant user-avatar-placeholder hidden">account_circle</span>
     {% else %}
-    <span class="material-symbols-outlined text-3xl text-on-surface-variant">account_circle</span>
+    <img class="resident-profile-image user-avatar hidden" src="" alt="Profile picture">
+    <span class="material-symbols-outlined text-3xl text-on-surface-variant user-avatar-placeholder">account_circle</span>
     {% endif %}
     <span class="resident-header-username">{{ request.user.username }}</span>
     <span id="profile-arrow" class="material-symbols-outlined text-base text-on-surface-variant transition-transform duration-300">expand_more</span>
@@ -353,9 +355,13 @@
   <div id="profile-menu" class="impeccable-dropdown hidden absolute right-0 mt-2 w-72 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ease-out transform scale-95 opacity-0">
     <div class="p-5 border-b border-outline-variant bg-surface-container-low flex flex-col items-center justify-center text-center">
       {% if request.user.profile.profile_picture %}
-      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5" src="{{ request.user.profile.profile_picture.url }}" alt="">
+      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5 user-avatar" src="{{ request.user.profile.profile_picture.url }}" alt="">
+      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3 user-avatar-placeholder hidden">
+        <span class="material-symbols-outlined text-[36px]">account_circle</span>
+      </div>
       {% else %}
-      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3">
+      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5 user-avatar hidden" src="" alt="">
+      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3 user-avatar-placeholder">
         <span class="material-symbols-outlined text-[36px]">account_circle</span>
       </div>
       {% endif %}
@@ -363,7 +369,7 @@
       <p class="text-xs text-on-surface-variant mt-1">{{ request.user.email|default:'Resident Account' }}</p>
     </div>
     <div class="p-2 flex flex-col gap-1">
-      <a href="{% url 'profile' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low text-on-surface transition-colors font-medium text-sm group">
+      <a href="#spa-settings" onclick="document.getElementById('profile-menu').classList.add('hidden')" class="spa-link flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low text-on-surface transition-colors font-medium text-sm group">
         <span class="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:rotate-45 transition-transform duration-300">settings</span> Account Settings
       </a>
       <div class="h-px bg-outline-variant/30 my-1 mx-2"></div>
