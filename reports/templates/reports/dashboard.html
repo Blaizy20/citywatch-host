@@ -179,7 +179,7 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
     </div>
     <!-- Tab: Submit Report -->
     <div id="spa-submit" class="spa-tab hidden w-full transition-opacity duration-300">
-        <div class="mb-6">
+        <div class="mb-6 animate-stagger">
 <h1 class="text-3xl font-semibold text-primary mb-1">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
 <p class="text-on-surface-variant max-w-2xl">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
 </div>
@@ -194,7 +194,7 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 {% csrf_token %}
 {% if form.non_field_errors %}<div class="lg:col-span-12 rounded-lg bg-error-container p-3 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
 
-<div class="lg:col-span-8 flex flex-col gap-8">
+<div class="lg:col-span-8 flex flex-col gap-8 animate-stagger">
 
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
 <div class="flex items-center gap-3 mb-4">
@@ -276,7 +276,7 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 </div>
 </div>
 
-<div class="lg:col-span-4 flex flex-col gap-8">
+<div class="lg:col-span-4 flex flex-col gap-8 animate-stagger" style="animation-delay: 150ms;">
 
 <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
 <div class="flex items-center gap-3 mb-4">
@@ -386,7 +386,7 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
     <div id="spa-public-board" class="spa-tab hidden w-full transition-opacity duration-300">
         <div class="max-w-5xl">
             <!-- Header Section -->
-            <div class="mb-12 border-b-8 border-primary pb-8">
+            <div class="mb-12 border-b-8 border-primary pb-8 animate-stagger">
                 <h1 class="text-4xl md:text-5xl font-display font-bold text-on-surface mb-6">Community Transparency Board</h1>
                 <p class="text-xl text-on-surface-variant max-w-3xl leading-relaxed">
                     This public docket ensures municipal responsiveness and verified resolutions across Baliwag. All community-reported issues are tracked here.
@@ -404,7 +404,7 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
             </div>
 
             <!-- Filters -->
-            <form id="public-board-filters" method="GET" class="mb-12 border-b border-outline-variant/50 pb-8 flex flex-col md:flex-row gap-6 items-end">
+            <form id="public-board-filters" method="GET" class="mb-12 border-b border-outline-variant/50 pb-8 flex flex-col md:flex-row gap-6 items-end animate-stagger" style="animation-delay: 100ms;">
                 <div class="w-full md:w-1/2">
                     <label class="block text-sm font-bold text-on-surface mb-2">Search records</label>
                     <div class="relative">
@@ -434,7 +434,7 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
             </form>
 
             <!-- List -->
-            <section id="public-board-grid" class="flex flex-col transition-opacity duration-150 ease-out pb-12">
+            <section id="public-board-grid" class="flex flex-col animate-stagger pb-12" style="animation-delay: 200ms;">
             {% for report in public_reports %}
             <article class="flex flex-col md:flex-row gap-6 py-6 border-b border-outline-variant/50 group">
                 <div class="md:w-1/4 flex-shrink-0">
@@ -634,6 +634,23 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
         </div>
     </div>
     
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div class="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-all duration-300 border border-outline-variant/30 mx-4">
+            <div class="flex items-center gap-3 text-primary mb-4">
+                <div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                </div>
+                <h3 class="text-xl font-bold font-display text-on-surface">Confirm Logout</h3>
+            </div>
+            <p class="text-on-surface-variant text-sm mb-6">Are you sure you want to securely log out of your session?</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="window.closeLogoutModal()" class="px-4 py-2 font-semibold text-on-surface hover:bg-surface-container-low rounded-lg transition-colors">Cancel</button>
+                <a href="{% url 'logout' %}" class="px-4 py-2 font-semibold bg-primary text-on-primary hover:bg-primary/90 rounded-lg transition-colors flex items-center justify-center min-w-[80px]">Logout</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 backdrop-blur-sm transition-opacity duration-300 opacity-0">
         <div class="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-sm shadow-2xl transform scale-95 transition-all duration-300 border border-outline-variant/30 mx-4">
@@ -721,27 +738,49 @@ function navigateSpa() {
         hash = '#spa-report-edit';
     }
     
-    // Hide all tabs and reset animation states
-    tabs.forEach(tab => {
-        tab.classList.remove('block', 'opacity-100', 'translate-y-0');
-        tab.classList.add('hidden', 'opacity-0', 'translate-y-4', 'transition-all', 'duration-300', 'ease-out');
-    });
+    // Find active tab elements
+    let nextTab = document.querySelector(hash);
+    if (!nextTab) nextTab = document.getElementById('spa-overview');
     
-    let activeTab = document.querySelector(hash);
-    if (!activeTab) {
-        activeTab = document.getElementById('spa-overview');
-    }
+    // Find currently visible tabs
+    const currentTabs = Array.from(tabs).filter(tab => !tab.classList.contains('hidden'));
     
-    // Show active tab and trigger animation
-    if (activeTab) {
-        activeTab.classList.remove('hidden');
-        // Force reflow
-        void activeTab.offsetWidth;
-        activeTab.classList.add('block');
-        requestAnimationFrame(() => {
-            activeTab.classList.remove('opacity-0', 'translate-y-4');
-            activeTab.classList.add('opacity-100', 'translate-y-0');
+    // If the target tab is already the only one visible, skip animation (just update active links)
+    if (currentTabs.length === 1 && currentTabs[0] === nextTab) {
+        // Nothing to hide/show
+    } else {
+        // Step 1: Fade out current tabs
+        currentTabs.forEach(tab => {
+            if (tab !== nextTab) {
+                tab.classList.remove('opacity-100', 'translate-y-0');
+                tab.classList.add('opacity-0', 'translate-y-4');
+            }
         });
+        
+        // Ensure the next tab has base styles ready
+        nextTab.classList.add('transition-all', 'duration-300', 'ease-[cubic-bezier(0.23,1,0.32,1)]');
+        nextTab.classList.remove('block');
+        
+        // Wait for current tab to fade out, then hide it and show next tab
+        setTimeout(() => {
+            currentTabs.forEach(tab => {
+                if (tab !== nextTab) {
+                    tab.classList.remove('block');
+                    tab.classList.add('hidden');
+                }
+            });
+            
+            // Step 2: Show and fade in next tab
+            nextTab.classList.remove('hidden');
+            nextTab.classList.add('block');
+            
+            // Force layout calculation so the browser knows it's display: block
+            // before we change the opacity/transform for the animation.
+            void nextTab.offsetWidth;
+            
+            nextTab.classList.remove('opacity-0', 'translate-y-4');
+            nextTab.classList.add('opacity-100', 'translate-y-0');
+        }, currentTabs.length > 0 ? 150 : 0); // 150ms crossfade delay
     }
     
     // Load report content via AJAX if needed
@@ -1201,6 +1240,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    window.openLogoutModal = function(e) {
+        if (e) e.preventDefault();
+        const modal = document.getElementById('logout-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+            
+            // Close the profile menu if open
+            const profileMenu = document.getElementById('profile-menu');
+            if (profileMenu) {
+                profileMenu.classList.add('hidden');
+            }
+        }
+    };
+    
+    window.closeLogoutModal = function() {
+        const modal = document.getElementById('logout-modal');
+        if (modal) {
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    };
 
     // Settings AJAX Form
     function attachSettingsForm() {
