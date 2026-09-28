@@ -32,7 +32,7 @@ tailwind.config = { theme: { extend: {
 <main class="flex-1 flex flex-col bg-background min-h-screen">
 {% include 'reports/partials/resident_header.html' %}
 
-<div class="flex-1 px-8 py-8 max-w-4xl mx-auto w-full">
+<div id="report-detail-content" class="flex-1 px-5 md:px-16 py-8 md:py-12 max-w-4xl w-full self-center">
 
 <a href="{% url 'report_list' %}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary">
 <span class="material-symbols-outlined">arrow_back</span> Back to My Reports
@@ -70,19 +70,21 @@ tailwind.config = { theme: { extend: {
 </div>
 
 {% if report.photo %}
-<img src="{{ report.photo.url }}" class="w-full h-64 object-cover rounded-lg border border-outline-variant mb-4">
+<div class="bg-surface-container-low rounded-lg border border-outline-variant mb-6 p-2 flex items-center justify-center">
+    <img src="{{ report.photo.url }}" class="w-full max-h-[500px] object-contain rounded">
+</div>
 {% endif %}
 
 <p class="text-on-surface-variant leading-relaxed">{{ report.description }}</p>
 
 {% if report.status == 'pending' %}
 <div class="flex gap-3 mt-6 pt-6 border-t border-outline-variant">
-<a href="{% url 'report_edit' report.id %}" class="px-4 py-2 border border-outline rounded-lg text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors text-sm font-semibold flex items-center gap-2">
+<a href="#spa-report-edit-{{ report.id }}" class="px-4 py-2 border border-outline rounded-lg text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors text-sm font-semibold flex items-center gap-2">
 <span class="material-symbols-outlined text-[18px]">edit</span> Edit Report
 </a>
-<a href="{% url 'report_delete' report.id %}" class="px-4 py-2 border border-error rounded-lg text-error hover:bg-error-container transition-colors text-sm font-semibold flex items-center gap-2">
+<button onclick="window.promptDeleteReport({{ report.id }})" class="px-4 py-2 border border-error rounded-lg text-error hover:bg-error-container transition-colors text-sm font-semibold flex items-center gap-2 focus:outline-none">
 <span class="material-symbols-outlined text-[18px]">delete</span> Delete Report
-</a>
+</button>
 </div>
 {% endif %}
 </div>

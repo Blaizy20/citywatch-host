@@ -21,15 +21,8 @@
 <span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">public</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Public Board</span></a>
 <a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-announcements" title="Announcements">
 <span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">campaign</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Announcements</span></a>
-<a class="spa-link group flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="#spa-notifications" title="Notifications">
-<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform relative">notifications{% if unread_notifications_count %}<span class="absolute -right-1 -top-1 min-w-3 h-3 rounded-full bg-error"></span>{% endif %}</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Notifications</span></a>
 </nav>
-<div class="p-3 border-t border-outline-variant flex flex-col gap-2">
-<a class="group flex items-center gap-3 px-3 py-3 rounded-lg {% if request.resolver_match.url_name == 'profile' %}bg-primary-container text-on-primary-container{% else %}text-on-surface-variant hover:bg-surface-container-low{% endif %} transition-all text-sm font-semibold" href="{% url 'profile' %}" title="Settings">
-<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">settings</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Settings</span></a>
-<a class="group flex items-center gap-3 px-3 py-3 rounded-lg text-error hover:bg-error-container transition-all text-sm font-semibold" href="{% url 'logout' %}" title="Logout">
-<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">logout</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Logout</span></a>
-</div>
+
 </aside>
 <script>
 document.addEventListener('DOMContentLoaded', () => {

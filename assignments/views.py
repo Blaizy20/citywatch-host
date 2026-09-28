@@ -39,7 +39,7 @@ def assign_report(request, report_id):
 
                 create_notification(
                     user=report.resident,
-                    message=f'Your report "{report.title}" has been assigned and is now being reviewed.',
+                    message=f'Your report <b>{report.title}</b> has been assigned and is now being reviewed.',
                     report=report,
                     notif_type='assignment'
                 )
@@ -73,7 +73,7 @@ def update_status(request, report_id):
 
             create_notification(
                 user=report.resident,
-                message=f'Your report "{report.title}" status changed to {report.get_status_display()}.',
+                message=f'Your report <b>{report.title}</b> status changed to <b>{report.get_status_display()}</b>.',
                 report=report,
                 notif_type='status_update'
             )

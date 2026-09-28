@@ -25,8 +25,21 @@ def toggle_read(request, notif_id):
     if request.method == 'POST':
         notif.is_read = not notif.is_read
         notif.save(update_fields=['is_read'])
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'status': 'success', 'is_read': notif.is_read})
     return redirect('notification_list')
 
+
+@login_required
+def delete_notification(request, notif_id):
+    if request.method == 'POST':
+        notif = get_object_or_404(Notification, id=notif_id, user=request.user)
+        notif.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({'status': 'success'})
+    return redirect('notification_list')
 
 @login_required
 def mark_all_read(request):

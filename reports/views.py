@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -58,7 +59,25 @@ def resident_dashboard(request):
     }
     
     # Context for other SPA tabs
-    public_reports = Report.objects.all().order_by('-date_submitted')[:20]
+    status_filter = request.GET.get('status', '').strip()
+    category_filter = request.GET.get('category', '').strip()
+
+    if status_filter:
+        reports = reports.filter(status=status_filter)
+
+    public_reports = Report.objects.all()
+    if status_filter:
+        public_reports = public_reports.filter(status=status_filter)
+    if category_filter:
+        public_reports = public_reports.filter(category=category_filter)
+    if search_query:
+        public_reports = public_reports.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(barangay__icontains=search_query)
+        )
+    public_reports = public_reports.order_by('-date_submitted')[:20]
+    
     all_announcements = Announcement.objects.filter(is_published=True).order_by('-date_published')
     
     from notifications.models import Notification
@@ -76,6 +95,8 @@ def resident_dashboard(request):
         'all_notifications': all_notifications, # Notifications tab
         'form': ReportForm(), # New Report tab
         'search_query': search_query,
+        'status_filter': status_filter,
+        'category_filter': category_filter,
     })
 
 
@@ -115,14 +136,19 @@ def report_create(request):
 
             create_notification(
                 user=request.user,
-                message=f'Your report "{report.title}" has been submitted.',
+                message=f'Your report <b>{report.title}</b> has been submitted.',
                 report=report,
                 notif_type='status_update'
             )
+            
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'report_id': report.id})
 
             messages.success(request, 'Report submitted successfully!')
             return redirect('report_detail', report_id=report.id)
         else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
             messages.error(request, 'Please check the form for errors.')
     else:
         form = ReportForm()
@@ -133,10 +159,6 @@ def report_create(request):
 @login_required
 def report_detail(request, report_id):
     report = get_object_or_404(Report, id=report_id)
-
-    if report.resident != request.user and not request.user.is_staff:
-        messages.error(request, "You don't have permission to view this report.")
-        return redirect('report_list')
 
     status_logs = report.status_logs.all()
     feedback = getattr(report, 'feedback', None)
@@ -174,8 +196,13 @@ def report_edit(request, report_id):
         form = ReportForm(request.POST, request.FILES, instance=report)
         if form.is_valid():
             form.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'report_id': report.id})
             messages.success(request, 'Report updated successfully!')
             return redirect('report_detail', report_id=report.id)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
     else:
         form = ReportForm(instance=report)
 
@@ -187,11 +214,15 @@ def report_delete(request, report_id):
     report = get_object_or_404(Report, id=report_id, resident=request.user)
 
     if report.status != 'pending':
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'message': 'You can only delete pending reports.'}, status=400)
         messages.error(request, 'You can only delete reports that are still pending.')
         return redirect('report_detail', report_id=report.id)
 
     if request.method == 'POST':
         report.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success'})
         messages.success(request, 'Report deleted.')
         return redirect('report_list')
 

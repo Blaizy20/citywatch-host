@@ -28,10 +28,10 @@ tailwind.config = { theme: { extend: {
 
 {% include 'reports/partials/resident_sidebar.html' %}
 
-<div class="flex-grow flex flex-col min-w-0">
+<div class="flex-1 flex flex-col min-w-0">
 {% include 'reports/partials/resident_header.html' %}
 
-<main class="flex-grow max-w-6xl mx-auto w-full px-8 py-12">
+<main id="report-edit-content" class="flex-1 max-w-6xl w-full px-8 py-12 self-center">
 <div class="mb-6">
 <h1 class="text-3xl font-semibold text-primary mb-1">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
 <p class="text-on-surface-variant max-w-2xl">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
@@ -43,7 +43,7 @@ tailwind.config = { theme: { extend: {
 {% endfor %}
 {% endif %}
 
-<form method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<form id="report-edit-form" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 {% csrf_token %}
 {% if form.non_field_errors %}<div class="lg:col-span-12 rounded-lg bg-error-container p-3 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
 
@@ -153,6 +153,7 @@ tailwind.config = { theme: { extend: {
 <span class="material-symbols-outlined text-[20px]">send</span>
 {% if editing %}Update Report{% else %}Submit Report{% endif %}
 </button>
+<a href="#spa-my-reports" class="block w-full text-center mt-3 text-sm text-primary hover:underline font-medium">Cancel Edit</a>
 <p class="text-center text-xs text-on-surface-variant mt-3">By submitting, you agree to our Terms.</p>
 </div>
 

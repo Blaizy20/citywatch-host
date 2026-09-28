@@ -4,13 +4,14 @@
 .resident-profile-image { width: 32px; height: 32px; min-width: 32px; border-radius: 9999px; object-fit: cover; }
 @media (max-width: 639px) { .resident-search { width: min(220px, 52vw); } .resident-header-username { display: none; } }
 </style>
-<header class="resident-header border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-5 md:px-8 sticky top-0 z-40 w-full">
-<div class="flex items-center lg:hidden">
+<header class="resident-header border-b border-outline-variant bg-surface-container-lowest sticky top-0 z-40 w-full">
+<div class="max-w-7xl mx-auto w-full px-5 md:px-16 flex items-center justify-between h-full">
+<div class="flex items-center lg:hidden mr-auto">
   <a class="flex items-center gap-1 text-lg font-bold text-primary font-display" href="{% url 'home' %}">
     <span class="material-symbols-outlined text-[20px]">location_city</span>CityWatch
   </a>
 </div>
-<div class="flex items-center gap-4 justify-end flex-grow">
+<div class="flex items-center gap-4 justify-end flex-grow ml-auto">
 <form method="GET" action="{% url 'public_board' %}" class="relative">
 <label class="sr-only" for="resident-search">Search reports or news</label>
 <input id="resident-search" name="q" value="{{ search_query|default:'' }}" type="search" placeholder="Search reports or news..." class="resident-search border border-outline-variant bg-background py-2 pl-10 pr-4 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
@@ -19,32 +20,45 @@
 <div class="relative" id="notification-dropdown-container">
   <button id="notification-toggle" aria-label="Notifications" class="relative rounded-full p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors outline-none focus:ring-2 focus:ring-primary">
     <span class="material-symbols-outlined">notifications</span>
-    {% if unread_notifications_count %}<span class="absolute right-1 top-1 min-w-4 h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">{{ unread_notifications_count }}</span>{% endif %}
+    <span id="unread-badge" class="absolute right-1 top-1 min-w-4 h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center {% if not unread_notifications_count %}hidden{% endif %}">{{ unread_notifications_count|default:"0" }}</span>
   </button>
   
-  <div id="notification-menu" class="hidden absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-50 overflow-hidden origin-top-right">
+  <div id="notification-menu" class="impeccable-dropdown hidden absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ease-out transform scale-95 opacity-0">
     <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
       <h3 class="font-semibold text-sm text-on-surface font-display">Notifications</h3>
-      <a href="{% url 'notification_list' %}" class="text-xs text-primary hover:underline font-medium">View All</a>
+      <a href="#spa-notifications" onclick="document.getElementById('notification-menu').classList.add('hidden')" class="text-xs text-primary hover:underline font-medium">View All</a>
     </div>
     <div class="max-h-80 overflow-y-auto">
       {% if recent_notifications %}
         <div class="flex flex-col">
         {% for notif in recent_notifications %}
-          <a href="#spa-notifications" class="spa-link flex gap-3 p-4 border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors {% if not notif.is_read %}bg-primary-container/20{% endif %}">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 {% if not notif.is_read %}bg-primary text-on-primary{% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
-              <span class="material-symbols-outlined text-sm">
-                {% if notif.notif_type == 'status_update' %}update
-                {% elif notif.notif_type == 'assignment' %}assignment
-                {% elif notif.notif_type == 'feedback_request' %}rate_review
-                {% else %}campaign{% endif %}
-              </span>
+          <div class="relative group/notif border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors bg-surface-container-lowest p-4 flex flex-col gap-3" id="notif-{{ notif.id }}">
+            <div class="flex gap-3 relative">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 {% if not notif.is_read %}bg-primary text-on-primary{% else %}bg-primary-container/50 text-primary{% endif %} transition-transform group-hover/notif:scale-105" id="notif-icon-{{ notif.id }}">
+                <span class="material-symbols-outlined text-sm">
+                  {% if notif.notif_type == 'status_update' %}update
+                  {% elif notif.notif_type == 'assignment' %}assignment
+                  {% elif notif.notif_type == 'feedback_request' %}rate_review
+                  {% else %}campaign{% endif %}
+                </span>
+              </div>
+              <div class="flex-1 min-w-0 pr-2">
+                <p class="text-sm text-on-surface line-clamp-2 {% if not notif.is_read %}font-semibold{% endif %}" id="notif-text-{{ notif.id }}">{{ notif.message|safe }}</p>
+                <p class="text-[10px] text-on-surface-variant mt-1 {% if not notif.is_read %}text-primary font-medium{% endif %}" id="notif-time-{{ notif.id }}">{{ notif.date_created|timesince }} ago</p>
+              </div>
+              {% if not notif.is_read %}
+              <span class="absolute right-0 top-1 w-2 h-2 rounded-full bg-primary flex-shrink-0 transition-opacity" id="notif-dot-{{ notif.id }}"></span>
+              {% endif %}
             </div>
-            <div>
-              <p class="text-sm text-on-surface {% if not notif.is_read %}font-semibold{% endif %}">{{ notif.message }}</p>
-              <p class="text-[10px] text-on-surface-variant mt-1 {% if not notif.is_read %}text-primary{% endif %}">{{ notif.date_created|timesince }} ago</p>
+            <!-- Action Bar -->
+            <div class="flex items-center gap-2 ml-11">
+               <button onclick="toggleRead({{ notif.id }})" class="text-[10px] font-semibold px-2 py-1 rounded bg-primary-container text-on-primary-container hover:brightness-95 transition-all">Mark <span id="notif-read-btn-{{ notif.id }}">{% if notif.is_read %}Unread{% else %}Read{% endif %}</span></button>
+               {% if notif.report %}
+               <a href="#spa-report-detail-{{ notif.report.id }}" {% if not notif.is_read %}onclick="toggleRead({{ notif.id }})"{% endif %} class="text-[10px] font-semibold px-2 py-1 rounded bg-surface-container-high text-on-surface hover:brightness-95 transition-all">View</a>
+               {% endif %}
+               <button onclick="archiveNotif({{ notif.id }})" class="text-[10px] font-semibold px-2 py-1 rounded bg-error-container text-error hover:brightness-95 transition-all ml-auto">Archive</button>
             </div>
-          </a>
+          </div>
         {% endfor %}
         </div>
       {% else %}
@@ -60,30 +74,305 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('notification-toggle');
-    const menu = document.getElementById('notification-menu');
-    
-    if (toggle && menu) {
+    function setupDropdown(toggleId, menuId) {
+      const toggle = document.getElementById(toggleId);
+      const menu = document.getElementById(menuId);
+      if (!toggle || !menu) return;
+      
+      let isOpen = false;
+      
       toggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        menu.classList.toggle('hidden');
+        if (isOpen) closeMenu();
+        else openMenu();
       });
       
       document.addEventListener('click', (e) => {
-        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-          menu.classList.add('hidden');
+        if (isOpen && !menu.contains(e.target) && !toggle.contains(e.target)) {
+          closeMenu();
         }
       });
+      
+      function openMenu() {
+        // Close any other open dropdowns
+        document.querySelectorAll('.impeccable-dropdown').forEach(m => {
+          if (!m.classList.contains('hidden') && m.id !== menuId) {
+            m.classList.remove('scale-100', 'opacity-100');
+            m.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { m.classList.add('hidden'); }, 200);
+            m.dataset.isOpen = 'false';
+            if (m.id === 'profile-menu') {
+              const arrow = document.getElementById('profile-arrow');
+              if (arrow) arrow.classList.remove('rotate-180');
+            }
+          }
+        });
+        
+        menu.classList.remove('hidden');
+        void menu.offsetWidth; // Force reflow
+        menu.classList.remove('scale-95', 'opacity-0');
+        menu.classList.add('scale-100', 'opacity-100');
+        isOpen = true;
+        menu.dataset.isOpen = 'true';
+        
+        if (toggleId === 'profile-toggle') {
+          const arrow = document.getElementById('profile-arrow');
+          if (arrow) arrow.classList.add('rotate-180');
+        }
+      }
+      
+      function closeMenu() {
+        menu.classList.remove('scale-100', 'opacity-100');
+        menu.classList.add('scale-95', 'opacity-0');
+        isOpen = false;
+        menu.dataset.isOpen = 'false';
+        setTimeout(() => {
+          if (menu.dataset.isOpen === 'false') menu.classList.add('hidden');
+        }, 200);
+        
+        if (toggleId === 'profile-toggle') {
+          const arrow = document.getElementById('profile-arrow');
+          if (arrow) arrow.classList.remove('rotate-180');
+        }
+      }
     }
+
+    setupDropdown('notification-toggle', 'notification-menu');
+    setupDropdown('profile-toggle', 'profile-menu');
+    
+    // Notification AJAX Handlers
+    window.getCookie = function(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    window.updateUnreadCount = function(delta) {
+        const badge = document.getElementById('unread-badge');
+        const dot = document.getElementById('sidebar-unread-dot');
+        
+        if (badge) {
+            let currentCount = parseInt(badge.innerText) || 0;
+            currentCount += delta;
+            if (currentCount < 0) currentCount = 0;
+            
+            badge.innerText = currentCount;
+            if (currentCount > 0) {
+                badge.classList.remove('hidden');
+                if (dot) dot.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                if (dot) dot.classList.add('hidden');
+            }
+        }
+    };
+
+    window.toggleRead = function(id) {
+        fetch(`/notifications/${id}/toggle-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(res => res.json()).then(data => {
+            if(data.status === 'success') {
+                const icon = document.getElementById(`notif-icon-${id}`);
+                const text = document.getElementById(`notif-text-${id}`);
+                const time = document.getElementById(`notif-time-${id}`);
+                const dot = document.getElementById(`notif-dot-${id}`);
+                const btn = document.getElementById(`notif-read-btn-${id}`);
+                
+                if(data.is_read) {
+                    icon.classList.remove('bg-primary', 'text-on-primary');
+                    icon.classList.add('bg-primary-container/50', 'text-primary');
+                    text.classList.remove('font-semibold');
+                    time.classList.remove('text-primary', 'font-medium');
+                    if(dot) dot.classList.add('hidden');
+                    if(btn) btn.innerText = 'Unread';
+                    updateUnreadCount(-1);
+                } else {
+                    icon.classList.add('bg-primary', 'text-on-primary');
+                    icon.classList.remove('bg-primary-container/50', 'text-primary');
+                    text.classList.add('font-semibold');
+                    time.classList.add('text-primary', 'font-medium');
+                    if(dot) dot.classList.remove('hidden');
+                    if(btn) btn.innerText = 'Read';
+                    updateUnreadCount(1);
+                }
+            }
+        });
+    };
+
+    window.refreshNotifications = function() {
+        fetch('/reports/dashboard/')
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newDropdown = doc.querySelector('#notification-dropdown-container');
+                const currentDropdown = document.querySelector('#notification-dropdown-container');
+                if (newDropdown && currentDropdown) {
+                    // Update innerHTML
+                    currentDropdown.innerHTML = newDropdown.innerHTML;
+                    
+                    // Re-bind the toggle event listener since the DOM was replaced
+                    const toggle = document.getElementById('notification-toggle');
+                    const menu = document.getElementById('notification-menu');
+                    let isOpen = false;
+                    
+                    toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (isOpen) {
+                            menu.classList.remove('scale-100', 'opacity-100');
+                            menu.classList.add('scale-95', 'opacity-0');
+                            isOpen = false;
+                            setTimeout(() => { if (!isOpen) menu.classList.add('hidden'); }, 200);
+                        } else {
+                            document.querySelectorAll('.impeccable-dropdown').forEach(m => {
+                                if (!m.classList.contains('hidden') && m.id !== 'notification-menu') {
+                                    m.classList.remove('scale-100', 'opacity-100');
+                                    m.classList.add('scale-95', 'opacity-0');
+                                    setTimeout(() => { m.classList.add('hidden'); }, 200);
+                                }
+                            });
+                            menu.classList.remove('hidden');
+                            void menu.offsetWidth;
+                            menu.classList.remove('scale-95', 'opacity-0');
+                            menu.classList.add('scale-100', 'opacity-100');
+                            isOpen = true;
+                        }
+                    });
+                }
+            });
+    };
+
+    window.archiveNotif = function(id) {
+        const el = document.getElementById(`notif-${id}`);
+        const dot = document.getElementById(`notif-dot-${id}`);
+        const wasUnread = dot && !dot.classList.contains('hidden');
+
+        // Create inline overlay
+        const undoOverlay = document.createElement('div');
+        undoOverlay.id = `notif-undo-${id}`;
+        undoOverlay.className = 'absolute inset-0 bg-surface-container px-4 z-20 opacity-0 transition-opacity duration-300 flex flex-col justify-center';
+        undoOverlay.innerHTML = `
+            <div class="flex items-center justify-center gap-4 w-full relative z-10">
+                <div class="flex items-center gap-2 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[18px]">archive</span>
+                    <span class="text-sm font-medium">Notification archived</span>
+                </div>
+                <div class="w-px h-4 bg-outline-variant/50"></div>
+                <button onclick="undoArchive(${id}, ${wasUnread})" class="text-primary font-bold text-sm uppercase tracking-wide hover:brightness-110 focus:outline-none">Undo</button>
+            </div>
+            <div id="notif-progress-${id}" class="absolute bottom-0 left-0 h-1 bg-primary" style="width: 100%; transition: width 5s linear;"></div>
+        `;
+        el.appendChild(undoOverlay);
+        
+        // Force DOM reflow so transitions trigger
+        undoOverlay.offsetHeight;
+        
+        // Trigger fade in and progress bar countdown
+        requestAnimationFrame(() => {
+            undoOverlay.classList.remove('opacity-0');
+            undoOverlay.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                const bar = document.getElementById(`notif-progress-${id}`);
+                if (bar) bar.style.width = '0%';
+            }, 50);
+        });
+        
+        if (wasUnread) updateUnreadCount(-1);
+
+        // Set deletion timer
+        const timer = setTimeout(() => {
+            fetch(`/notifications/${id}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(() => {
+                if (el) {
+                    el.style.height = el.offsetHeight + 'px';
+                    el.style.overflow = 'hidden';
+                    el.offsetHeight; // force reflow
+                    el.style.transition = 'all 0.3s ease-out';
+                    el.style.height = '0px';
+                    el.style.padding = '0px';
+                    el.style.opacity = '0';
+                    el.style.border = 'none';
+                    setTimeout(() => el.remove(), 300);
+                }
+            });
+        }, 5000);
+        
+        window.archiveTimers = window.archiveTimers || {};
+        window.archiveTimers[id] = timer;
+    };
+
+    window.undoArchive = function(id, wasUnread) {
+        const timer = window.archiveTimers[id];
+        if (timer) {
+            clearTimeout(timer);
+            delete window.archiveTimers[id];
+        }
+        
+        const undoOverlay = document.getElementById(`notif-undo-${id}`);
+        if (undoOverlay) {
+            undoOverlay.classList.remove('opacity-100');
+            undoOverlay.classList.add('opacity-0');
+            setTimeout(() => undoOverlay.remove(), 300);
+        }
+        
+        if (wasUnread) updateUnreadCount(1);
+    };
   });
 </script>
-<a class="flex items-center gap-2 text-sm font-semibold text-on-surface" href="{% url 'profile' %}">
-{% if request.user.profile.profile_picture %}
-<img class="resident-profile-image" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">
-{% else %}
-<span class="material-symbols-outlined text-3xl text-on-surface-variant">account_circle</span>
-{% endif %}
-<span class="resident-header-username">{{ request.user.username }}</span>
-</a>
+
+<div class="relative" id="profile-dropdown-container">
+  <button id="profile-toggle" class="flex items-center gap-2 text-sm font-semibold text-on-surface rounded-full hover:bg-surface-container-low p-1 pr-3 transition-colors outline-none focus:ring-2 focus:ring-primary">
+    {% if request.user.profile.profile_picture %}
+    <img class="resident-profile-image" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">
+    {% else %}
+    <span class="material-symbols-outlined text-3xl text-on-surface-variant">account_circle</span>
+    {% endif %}
+    <span class="resident-header-username">{{ request.user.username }}</span>
+    <span id="profile-arrow" class="material-symbols-outlined text-base text-on-surface-variant transition-transform duration-300">expand_more</span>
+  </button>
+
+  <div id="profile-menu" class="impeccable-dropdown hidden absolute right-0 mt-2 w-72 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ease-out transform scale-95 opacity-0">
+    <div class="p-5 border-b border-outline-variant bg-surface-container-low flex flex-col items-center justify-center text-center">
+      {% if request.user.profile.profile_picture %}
+      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5" src="{{ request.user.profile.profile_picture.url }}" alt="">
+      {% else %}
+      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-[36px]">account_circle</span>
+      </div>
+      {% endif %}
+      <h3 class="font-bold text-lg text-on-surface font-display leading-tight">{{ request.user.first_name|default:request.user.username }} {{ request.user.last_name }}</h3>
+      <p class="text-xs text-on-surface-variant mt-1">{{ request.user.email|default:'Resident Account' }}</p>
+    </div>
+    <div class="p-2 flex flex-col gap-1">
+      <a href="{% url 'profile' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low text-on-surface transition-colors font-medium text-sm group">
+        <span class="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:rotate-45 transition-transform duration-300">settings</span> Account Settings
+      </a>
+      <div class="h-px bg-outline-variant/30 my-1 mx-2"></div>
+      <a href="{% url 'logout' %}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-error-container/50 text-error transition-colors font-medium text-sm group">
+        <span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">logout</span> Sign Out
+      </a>
+    </div>
+  </div>
+</div>
+</div>
 </div>
 </header>
