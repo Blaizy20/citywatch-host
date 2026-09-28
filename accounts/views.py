@@ -15,11 +15,7 @@ def admin_check(user):
 def landing_view(request):
     from reports.models import Report
 
-    if request.user.is_authenticated:
-        if request.user.is_staff or request.user.is_superuser:
-            return redirect('analytics_dashboard')
-        else:
-            return redirect('resident_dashboard')
+    # Removed redirect so authenticated users can see the landing page
 
     recent_reports = Report.objects.all().order_by('-date_submitted')[:6]
     total_reports = Report.objects.count()

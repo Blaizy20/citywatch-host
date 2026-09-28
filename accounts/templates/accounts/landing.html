@@ -94,10 +94,17 @@ body:has(details[open]) { overflow: hidden; }
       <a class="hover:text-primary transition-colors nav-scroll-link" href="#baliwag">Baliwag City</a>
     </nav>
     
+    {% if request.user.is_authenticated %}
+    <div class="hidden md:flex items-center gap-4">
+      <span class="text-on-surface font-medium text-sm">Hello, {{ request.user.first_name }}</span>
+      <a class="bg-primary text-on-primary px-6 py-2 rounded-lg font-medium text-sm hover:bg-on-primary-container transition-colors shadow-sm min-h-[44px] flex items-center" href="{% if request.user.is_staff or request.user.is_superuser %}{% url 'analytics_dashboard' %}{% else %}{% url 'resident_dashboard' %}{% endif %}">Go to Dashboard</a>
+    </div>
+    {% else %}
     <div class="hidden md:flex items-center gap-4">
       <a class="text-primary font-medium text-sm hover:text-on-primary-container transition-colors min-h-[44px] flex items-center px-4" href="{% url 'login' %}">Log in</a>
       <a class="bg-primary text-on-primary px-6 py-2 rounded-lg font-medium text-sm hover:bg-on-primary-container transition-colors shadow-sm min-h-[44px] flex items-center" href="{% url 'register' %}">Sign up</a>
     </div>
+    {% endif %}
 
     <!-- Mobile Menu Button -->
     <details class="md:hidden group">
@@ -110,8 +117,12 @@ body:has(details[open]) { overflow: hidden; }
         <a class="py-4 text-xl font-display font-medium border-b border-outline-variant text-on-surface nav-scroll-link" href="#board">Transparency Board</a>
         <a class="py-4 text-xl font-display font-medium border-b border-outline-variant text-on-surface nav-scroll-link" href="#baliwag">Baliwag City</a>
         <div class="flex flex-col gap-4 mt-8">
+          {% if request.user.is_authenticated %}
+          <a class="text-center py-3 font-medium rounded-lg bg-primary text-on-primary min-h-[44px]" href="{% if request.user.is_staff or request.user.is_superuser %}{% url 'analytics_dashboard' %}{% else %}{% url 'resident_dashboard' %}{% endif %}">Go to Dashboard</a>
+          {% else %}
           <a class="text-center py-3 font-medium rounded-lg border border-primary text-primary min-h-[44px]" href="{% url 'login' %}">Log in</a>
           <a class="text-center py-3 font-medium rounded-lg bg-primary text-on-primary min-h-[44px]" href="{% url 'register' %}">Sign up</a>
+          {% endif %}
         </div>
       </div>
     </details>
@@ -132,9 +143,15 @@ body:has(details[open]) { overflow: hidden; }
         Report infrastructure and public safety concerns directly to the local government. Track resolution in real time and see what's being fixed in your barangay.
       </p>
       <div class="flex flex-col sm:flex-row items-center gap-4">
+        {% if request.user.is_authenticated %}
+        <a href="{% if request.user.is_staff or request.user.is_superuser %}{% url 'analytics_dashboard' %}{% else %}{% url 'resident_dashboard' %}#spa-submit{% endif %}" class="w-full sm:w-auto bg-primary text-on-primary px-8 py-3.5 rounded-xl font-medium hover:bg-on-primary-container transition-colors shadow-sm min-h-[44px] flex items-center justify-center">
+          Report an Issue
+        </a>
+        {% else %}
         <a href="{% url 'register' %}" class="w-full sm:w-auto bg-primary text-on-primary px-8 py-3.5 rounded-xl font-medium hover:bg-on-primary-container transition-colors shadow-sm min-h-[44px] flex items-center justify-center">
           Report an Issue
         </a>
+        {% endif %}
       </div>
     </div>
 
