@@ -32,7 +32,7 @@ tailwind.config = { theme: { extend: {
 <main class="flex-1 flex flex-col bg-background min-h-screen">
 {% include 'reports/partials/resident_header.html' %}
 
-<div id="report-detail-content" class="flex-1 px-5 md:px-16 py-8 md:py-12 max-w-4xl w-full self-center">
+<div id="report-detail-content" class="flex-1 px-4 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-4xl w-full self-center">
 
 <a href="{% url 'report_list' %}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary">
 <span class="material-symbols-outlined">arrow_back</span> Back to My Reports
@@ -44,7 +44,7 @@ tailwind.config = { theme: { extend: {
 {% endfor %}
 {% endif %}
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mb-6">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4">
 <div class="flex justify-between items-start mb-4 flex-wrap gap-3">
 <div>
 <span class="text-xs text-on-surface-variant uppercase tracking-wider">Report #CW-{{ report.id }}</span>
@@ -89,9 +89,9 @@ tailwind.config = { theme: { extend: {
 {% endif %}
 </div>
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 mb-6">
-<h2 class="text-lg font-semibold text-primary mb-4">Status Timeline</h2>
-<div class="space-y-4">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4">
+<h2 class="text-lg font-semibold text-primary mb-3">Status Timeline</h2>
+<div class="space-y-3">
 {% for log in status_logs %}
 <div class="flex gap-3">
 <div class="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
@@ -110,8 +110,8 @@ tailwind.config = { theme: { extend: {
 </div>
 
 {% if report.status == 'resolved' %}
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6">
-<h2 class="text-lg font-semibold text-primary mb-4">Feedback</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+<h2 class="text-lg font-semibold text-primary mb-3">Feedback</h2>
 {% if feedback %}
 <div class="flex items-center gap-1 mb-2">
 {% for i in "12345" %}

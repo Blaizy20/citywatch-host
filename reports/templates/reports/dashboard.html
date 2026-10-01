@@ -34,7 +34,9 @@ tailwind.config = {
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   .resident-sidebar { width: 256px; min-width: 256px; }
-  @media (max-width: 1023px) { .mobile-nav-pb { padding-bottom: 72px; } }
+    @media (max-width: 1023px) { .mobile-nav-pb { padding-bottom: 64px; } }
+    .resident-module-title { margin: 0; color: #1a1c1e; font-family: "Outfit", sans-serif; font-size: 1.875rem; font-weight: 600; line-height: 2.25rem; }
+    .resident-module-description { margin-top: .35rem; max-width: 48rem; color: #43474e; font-size: .95rem; line-height: 1.5; }
   
   @keyframes staggerSlideUp {
     0% { opacity: 0; transform: translateY(20px) scale(0.99); }
@@ -61,22 +63,22 @@ tailwind.config = {
 {% include 'reports/partials/resident_header.html' %}
 
 
-<main class="w-full max-w-7xl px-5 md:px-16 py-8 md:py-12 flex flex-col gap-12 relative self-center">
+<main class="w-full max-w-7xl px-4 sm:px-5 lg:px-8 py-5 lg:py-7 flex flex-col gap-7 relative self-center">
     <!-- Tab: Overview -->
     <div id="spa-overview" class="spa-tab block w-full transition-opacity duration-300 animate-stagger">
-        <section class="flex flex-col gap-4 max-w-4xl">
+        <section class="flex flex-col gap-3 max-w-4xl mb-5">
 <h1 class="text-3xl md:text-4xl text-on-surface font-display font-bold tracking-tight">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
 <p class="text-lg text-on-surface-variant leading-relaxed">Stay informed about your neighborhood. Manage your civic reports, track community infrastructure updates, and read the latest announcements from your local barangay office.</p>
 </section>
 
 <section class="mb-2">
   <h2 class="sr-only">Report Statistics</h2>
-  <div class="flex flex-col md:flex-row gap-8 py-8 border-y-2 border-outline-variant/30">
+    <div class="flex flex-col md:flex-row gap-6 py-5 border-y border-outline-variant/30">
     <div class="md:w-1/3">
       <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Total Contributions</p>
-      <div class="text-6xl md:text-7xl font-display font-bold tracking-tighter text-on-surface leading-none">{{ stats.total }}</div>
+    <div class="text-4xl font-display font-bold text-on-surface leading-none">{{ stats.total }}</div>
     </div>
-    <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 pt-4 md:pt-0">
+    <div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-4 pt-3 md:pt-0">
       <div class="border-l-4 border-orange-500 pl-4 py-1">
          <p class="text-sm font-medium text-on-surface-variant mb-1 flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px] text-orange-500">pending_actions</span> Pending</p>
          <p class="text-4xl font-display font-semibold text-on-surface">{{ stats.pending }}</p>
@@ -93,7 +95,8 @@ tailwind.config = {
   </div>
 </section>
 
-<section class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+<div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_18rem] gap-x-6 gap-y-5 items-start">
+<section class="order-1 xl:order-none xl:col-start-1 xl:row-start-1 grid grid-cols-1 sm:grid-cols-2 gap-4 mb-0">
 <a class="spa-link group flex items-center gap-4 bg-primary text-on-primary border border-primary rounded-xl p-4 hover:brightness-110 hover:-translate-y-1 hover:shadow-lg transition-all duration-300" href="#spa-submit">
 <div class="w-10 h-10 rounded-lg bg-white/15 text-white flex-shrink-0 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
 <span class="material-symbols-outlined text-2xl">report</span>
@@ -114,34 +117,36 @@ tailwind.config = {
 </a>
 </section>
 
-<section id="community-board" class="flex flex-col gap-6">
-<div class="flex justify-between items-end border-b border-outline-variant pb-3">
+<aside id="community-board" class="order-3 xl:order-none xl:col-start-2 xl:row-start-1 xl:row-span-2 flex flex-col rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+<div class="flex items-center justify-between gap-3 border-b border-outline-variant/70 pb-3">
 <div>
-<div class="flex items-center gap-3"><div class="bg-secondary-container text-on-secondary-container p-1.5 rounded-lg"><span class="material-symbols-outlined text-[20px]">campaign</span></div><h2 class="text-2xl text-on-surface font-semibold font-display">Community Board</h2></div>
-<p class="text-on-surface-variant mt-1 text-sm">News and advisories published by your local office.</p>
+<h2 class="text-lg text-on-surface font-semibold font-display">News &amp; Announcements</h2>
+<p class="text-on-surface-variant mt-1 text-xs">Updates from your local office</p>
 </div>
+<a href="#spa-announcements" class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline" aria-label="View all announcements">All updates<span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span></a>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="divide-y divide-outline-variant/60">
 {% for announcement in announcements %}
-<article class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-<div class="flex items-center justify-between gap-3 mb-2">
-<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold tracking-wide uppercase">{{ announcement.get_announcement_type_display }}</span>
-<span class="text-xs text-on-surface-variant">{{ announcement.date_published|default:announcement.date_created|date:"M d, Y" }}</span>
+<article class="py-3 first:pt-3 last:pb-3">
+{% if announcement.image %}<img src="{{ announcement.image.url }}" alt="" class="mb-2 h-28 w-full object-cover">{% endif %}
+<div class="flex items-center justify-between gap-2 mb-1.5">
+<span class="text-[10px] font-bold tracking-wide uppercase {% if announcement.announcement_type == 'advisory' %}text-orange-700{% else %}text-secondary{% endif %}">{{ announcement.get_announcement_type_display }}</span>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap">{{ announcement.date_published|default:announcement.date_created|date:"M d, Y" }}</span>
 </div>
-<h3 class="text-lg font-semibold text-on-surface font-display">{{ announcement.title }}</h3>
-<p class="mt-2 text-sm text-on-surface-variant line-clamp-3">{{ announcement.content }}</p>
+<h3 class="text-sm font-semibold leading-snug text-on-surface">{{ announcement.title }}</h3>
+<p class="mt-1.5 text-xs leading-relaxed text-on-surface-variant line-clamp-3">{{ announcement.content }}</p>
+{% if announcement.event_date %}<p class="mt-2 flex items-center gap-1 text-xs font-medium text-secondary"><span class="material-symbols-outlined text-sm">event</span>{{ announcement.event_date|date:"M d, Y, g:i A" }}</p>{% endif %}
 </article>
 {% empty %}
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant md:col-span-2 flex flex-col items-center">
-  <span class="material-symbols-outlined text-4xl mb-3 text-outline-variant">campaign</span>
-  <p>No news or advisories have been published yet.</p>
-  <p class="text-sm mt-1">Check back later for updates from your local office.</p>
+<div class="py-6 text-center text-on-surface-variant">
+    <span class="material-symbols-outlined text-3xl mb-2 text-outline-variant" aria-hidden="true">campaign</span>
+    <p class="text-sm">No updates have been published yet.</p>
 </div>
 {% endfor %}
 </div>
-</section>
+</aside>
 
-<section class="flex flex-col gap-6">
+<section class="order-2 xl:order-none xl:col-start-1 xl:row-start-2 flex flex-col gap-4">
 <div class="flex justify-between items-end border-b border-outline-variant pb-3">
 <div>
 <div class="flex items-center gap-3"><div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg"><span class="material-symbols-outlined text-[20px]">report</span></div><h2 class="text-2xl text-on-surface font-semibold font-display">My Active Reports</h2></div>
@@ -151,7 +156,7 @@ tailwind.config = {
 </div>
 <div class="flex flex-col gap-4">
 {% for report in reports %}
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow duration-200">
 <div class="flex items-start justify-between gap-4">
 <h3 class="text-xl text-on-surface leading-tight font-display font-semibold">{{ report.title }}</h3>
 {% if report.status == 'pending' %}
@@ -176,12 +181,13 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 {% endfor %}
 </div>
 </section>
+</div>
     </div>
     <!-- Tab: Submit Report -->
     <div id="spa-submit" class="spa-tab hidden w-full transition-opacity duration-300">
         <div class="mb-6 animate-stagger">
-<h1 class="text-3xl font-semibold text-primary mb-1">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
-<p class="text-on-surface-variant max-w-2xl">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
+<h1 class="resident-module-title">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
+<p class="resident-module-description">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
 </div>
 
 {% if messages %}
@@ -190,13 +196,13 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 {% endfor %}
 {% endif %}
 
-<form id="report-submit-form" method="POST" action="{% url 'report_create' %}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<form id="report-submit-form" method="POST" action="{% url 'report_create' %}" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 {% csrf_token %}
 {% if form.non_field_errors %}<div class="lg:col-span-12 rounded-lg bg-error-container p-3 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
 
-<div class="lg:col-span-8 flex flex-col gap-8 animate-stagger">
+<div class="lg:col-span-8 flex flex-col gap-5 animate-stagger">
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">category</span>
@@ -216,7 +222,7 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 {% if form.category.errors %}<p class="mt-2 text-xs text-error">{{ form.category.errors|striptags }}</p>{% endif %}
 </div>
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">description</span>
@@ -246,7 +252,7 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 </div>
 </div>
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">location_on</span>
@@ -276,9 +282,9 @@ No active reports (resolved reports are hidden). <a href="#spa-submit" class="sp
 </div>
 </div>
 
-<div class="lg:col-span-4 flex flex-col gap-8 animate-stagger" style="animation-delay: 150ms;">
+<div class="lg:col-span-4 flex flex-col gap-5 animate-stagger" style="animation-delay: 150ms;">
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">photo_camera</span>
@@ -324,10 +330,10 @@ photoInput.addEventListener('change', () => { photoName.textContent = photoInput
     <!-- Tab: My Reports -->
     <div id="spa-my-reports" class="spa-tab hidden w-full transition-opacity duration-300">
 
-<div class="flex-1 px-8 py-8 max-w-7xl mx-auto w-full">
-<div class="mb-8">
-<h1 class="text-3xl font-semibold text-primary mb-1">My Reports</h1>
-<p class="text-on-surface-variant">Track the status of your submitted civic issues.</p>
+<div class="w-full">
+<div class="mb-5">
+<h1 class="resident-module-title">My Reports</h1>
+<p class="resident-module-description">Track the status of your submitted civic issues.</p>
 </div>
 
 <div id="my-reports-filters" class="flex overflow-x-auto pb-4 mb-6 gap-2">
@@ -386,12 +392,12 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
     <div id="spa-public-board" class="spa-tab hidden w-full transition-opacity duration-300">
         <div class="max-w-5xl">
             <!-- Header Section -->
-            <div class="mb-12 border-b-8 border-primary pb-8 animate-stagger">
-                <h1 class="text-4xl md:text-5xl font-display font-bold text-on-surface mb-6">Community Transparency Board</h1>
-                <p class="text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+            <div class="mb-6 border-b border-outline-variant pb-5 animate-stagger">
+                            <h1 class="resident-module-title">Community Transparency Board</h1>
+                            <p class="resident-module-description">
                     This public docket ensures municipal responsiveness and verified resolutions across Baliwag. All community-reported issues are tracked here.
                 </p>
-                <div class="flex flex-wrap gap-8 mt-8">
+                <div class="flex flex-wrap gap-6 mt-5">
                     <div>
                         <span class="block text-3xl font-bold text-on-surface">{{ total_reports|default:"0" }}</span>
                         <span class="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Total Issues</span>
@@ -404,7 +410,7 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
             </div>
 
             <!-- Filters -->
-            <form id="public-board-filters" method="GET" class="mb-12 border-b border-outline-variant/50 pb-8 flex flex-col md:flex-row gap-6 items-end animate-stagger" style="animation-delay: 100ms;">
+            <form id="public-board-filters" method="GET" class="mb-6 border-b border-outline-variant/50 pb-5 flex flex-col md:flex-row gap-4 items-end animate-stagger" style="animation-delay: 100ms;">
                 <div class="w-full md:w-1/2">
                     <label class="block text-sm font-bold text-on-surface mb-2">Search records</label>
                     <div class="relative">
@@ -481,36 +487,37 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
     <div id="spa-announcements" class="spa-tab hidden w-full transition-opacity duration-300">
         <div class="max-w-5xl">
             <!-- Header Section -->
-            <div class="mb-12 border-b-8 border-primary pb-8">
-                <h1 class="text-4xl md:text-5xl font-display font-bold text-on-surface mb-6">Announcements and News</h1>
-                <p class="text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+            <div class="mb-6 border-b border-outline-variant pb-5">
+                <h1 class="resident-module-title">Announcements and News</h1>
+                <p class="resident-module-description">
                     Stay informed about the latest updates, events, and advisories from your local barangay office.
                 </p>
             </div>
 
             <!-- Filters -->
-            <div id="announcement-filters" class="flex flex-wrap items-center gap-2 mb-10 pb-4 border-b border-outline-variant/50">
+            <div id="announcement-filters" class="flex flex-wrap items-center gap-2 mb-6 pb-3 border-b border-outline-variant/50">
                 <a class="announcement-filter-btn px-6 py-2 rounded-full {% if not announcement_type %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?#spa-announcements">All Updates</a>
                 <a class="announcement-filter-btn px-6 py-2 rounded-full {% if announcement_type == 'advisory' %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?type=advisory#spa-announcements">Advisories</a>
                 <a class="announcement-filter-btn px-6 py-2 rounded-full {% if announcement_type == 'news' %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?type=news#spa-announcements">News</a>
+                <a class="announcement-filter-btn px-6 py-2 rounded-full {% if announcement_type == 'schedule' %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?type=schedule#spa-announcements">Schedules</a>
+                <a class="announcement-filter-btn px-6 py-2 rounded-full {% if announcement_type == 'announcement' %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?type=announcement#spa-announcements">Announcements</a>
+                <a class="announcement-filter-btn px-6 py-2 rounded-full {% if announcement_type == 'event' %}bg-primary text-on-primary border-transparent{% else %}bg-surface-container-lowest border border-outline-variant text-on-surface-variant{% endif %} text-sm font-semibold whitespace-nowrap transition-colors" href="?type=event#spa-announcements">Events</a>
             </div>
 
             <div id="announcements-list" class="flex flex-col transition-opacity duration-200 ease-out animate-stagger pb-12">
             {% for announcement in all_announcements %}
-                <article class="flex flex-col py-8 border-b border-outline-variant/50 group {% if forloop.first and not announcement_type %}md:flex-row gap-8{% else %}gap-4{% endif %}">
+                <article class="flex flex-col py-5 border-b border-outline-variant/50 group {% if forloop.first and not announcement_type %}md:flex-row gap-6{% else %}gap-3{% endif %}">
                     <div class="flex-shrink-0 {% if forloop.first and not announcement_type %}md:w-1/3{% endif %}">
                         <p class="text-sm font-bold text-on-surface-variant mb-2">{{ announcement.date_published|default:announcement.date_created|date:'F d, Y' }}</p>
-                        {% if announcement.announcement_type == 'advisory' %}
-                            <span class="inline-block px-3 py-1 font-bold text-sm bg-orange-100 text-orange-900 border-l-4 border-orange-500 mb-4">Advisory</span>
-                        {% else %}
-                            <span class="inline-block px-3 py-1 font-bold text-sm bg-blue-100 text-blue-900 border-l-4 border-blue-500 mb-4">News</span>
-                        {% endif %}
+                        <span class="inline-block px-2.5 py-1 font-semibold text-xs rounded {% if announcement.announcement_type == 'advisory' %}bg-orange-100 text-orange-900{% elif announcement.announcement_type == 'schedule' %}bg-blue-100 text-blue-900{% elif announcement.announcement_type == 'event' %}bg-amber-100 text-amber-900{% else %}bg-secondary-container text-on-secondary-container{% endif %}">{{ announcement.get_announcement_type_display }}</span>
                     </div>
                     
                     <div class="flex-grow">
-                        <h2 class="{% if forloop.first and not announcement_type %}text-3xl{% else %}text-2xl{% endif %} font-bold text-on-surface mb-4 leading-snug">
+                        {% if announcement.image %}<img src="{{ announcement.image.url }}" alt="" class="mb-3 max-h-64 w-full object-cover md:max-w-lg">{% endif %}
+                        <h2 class="text-xl font-semibold text-on-surface mb-3 leading-snug">
                             {{ announcement.title }}
                         </h2>
+                        {% if announcement.event_date %}<p class="mb-2 flex items-center gap-1 text-sm font-medium text-secondary"><span class="material-symbols-outlined text-base">event</span>{{ announcement.event_date|date:'F d, Y, g:i A' }}</p>{% endif %}
                         
                         <div class="prose prose-slate max-w-none text-base text-on-surface-variant leading-relaxed">
                             {{ announcement.content|linebreaks }}
@@ -528,13 +535,13 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
     </div>
     <!-- Tab: Notifications -->
     <div id="spa-notifications" class="spa-tab hidden w-full transition-opacity duration-300">
-        <div class="flex flex-wrap items-end justify-between gap-4 mb-7">
-<div><p class="text-sm font-semibold uppercase tracking-wider text-secondary">Resident center</p><h1 class="text-3xl font-bold text-primary mt-1">Notifications</h1><p class="text-on-surface-variant mt-2">Stay updated on your reports, assignments, and community announcements.</p></div>
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+    <div><h1 class="resident-module-title">Notifications</h1><p class="resident-module-description">Stay updated on your reports, assignments, and community announcements.</p></div>
 {% if unread_notifications_count %}<form method="POST" action="{% url 'mark_all_read' %}">{% csrf_token %}<button class="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low" type="submit"><span class="material-symbols-outlined text-lg">done_all</span>Mark all as read</button></form>{% endif %}
 </div>
 <div class="space-y-3" id="full-notifications-list">
 {% for notification in all_notifications %}
-<article id="full-notif-{{ notification.id }}" class="bg-surface-container-lowest border {% if not notification.is_read %}border-primary/40{% else %}border-outline-variant{% endif %} rounded-xl p-5 transition-colors">
+<article id="full-notif-{{ notification.id }}" class="bg-surface-container-lowest border {% if not notification.is_read %}border-primary/40{% else %}border-outline-variant{% endif %} rounded-xl p-4 transition-colors">
 <div class="flex gap-4 items-start">
     <div id="full-notif-icon-{{ notification.id }}" class="w-10 h-10 rounded-full {% if not notification.is_read %}bg-primary-container text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %} flex items-center justify-center flex-shrink-0 transition-colors">
         <span class="material-symbols-outlined">{% if notification.notif_type == 'status_update' %}update{% elif notification.notif_type == 'assignment' %}assignment{% elif notification.notif_type == 'feedback_request' %}rate_review{% else %}campaign{% endif %}</span>
@@ -557,7 +564,7 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
 </div>
 </article>
 {% empty %}
-<div class="bg-surface-container-lowest border border-dashed border-outline rounded-xl p-12 text-center">
+<div class="bg-surface-container-lowest border border-dashed border-outline rounded-xl p-8 text-center">
     <span class="material-symbols-outlined text-4xl text-outline">notifications_none</span>
     <h2 class="font-bold mt-3">You're all caught up</h2>
     <p class="text-sm text-on-surface-variant mt-1">New report updates and community announcements will appear here.</p>
@@ -580,15 +587,15 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
     
     <!-- Tab: Settings -->
     <div id="spa-settings" class="spa-tab hidden w-full transition-opacity duration-300">
-        <div class="flex-1 px-8 py-8 max-w-4xl mx-auto w-full">
-            <h1 class="text-3xl font-bold font-display text-primary mb-1">Settings</h1>
-            <p class="text-on-surface-variant mb-10">Manage your official civic profile and contact information.</p>
+        <div class="w-full max-w-4xl mx-auto">
+            <h1 class="resident-module-title">Settings</h1>
+            <p class="resident-module-description mb-6">Manage your official civic profile and contact information.</p>
             
             <div id="settings-messages"></div>
             
-            <div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-8 mb-8 shadow-sm">
-                <h2 class="text-xl font-bold font-display text-on-surface mb-6 border-b-2 border-outline-variant/30 pb-3">Official Record</h2>
-                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 mb-5">
+                <h2 class="text-lg font-semibold font-display text-on-surface mb-4 border-b border-outline-variant/50 pb-3">Official Record</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                     <div>
                         <dt class="text-on-surface-variant font-semibold uppercase tracking-wider text-xs mb-1">Username</dt>
                         <dd class="text-on-surface font-bold text-base">{{ request.user.username }}</dd>
@@ -608,9 +615,9 @@ No reports found. <a href="#spa-submit" class="spa-link text-primary font-semibo
                 </dl>
             </div>
             
-            <div class="bg-surface-container-lowest border-2 border-outline rounded-xl p-8 shadow-sm">
-                <h2 class="text-xl font-bold font-display text-on-surface mb-6 border-b-2 border-outline-variant/30 pb-3">Update Contact Details</h2>
-                <form id="settings-form" action="{% url 'profile' %}" method="POST" enctype="multipart/form-data" class="space-y-6 max-w-2xl">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+                <h2 class="text-lg font-semibold font-display text-on-surface mb-4 border-b border-outline-variant/50 pb-3">Update Contact Details</h2>
+                <form id="settings-form" action="{% url 'profile' %}" method="POST" enctype="multipart/form-data" class="space-y-4 max-w-2xl">
                     {% csrf_token %}
                     <div>
                         <label class="block text-sm font-bold text-on-surface mb-2" for="profile_picture">Profile Picture</label>

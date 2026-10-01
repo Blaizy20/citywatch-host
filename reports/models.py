@@ -6,11 +6,16 @@ class Announcement(models.Model):
     TYPE_CHOICES = [
         ('news', 'News'),
         ('advisory', 'Advisory'),
+        ('schedule', 'Schedule'),
+        ('announcement', 'Announcement'),
+        ('event', 'Event'),
     ]
 
     title = models.CharField(max_length=200)
     content = models.TextField()
     announcement_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='news')
+    image = models.ImageField(upload_to='announcement_images/', blank=True, null=True)
+    event_date = models.DateTimeField(blank=True, null=True)
     is_published = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_published = models.DateTimeField(blank=True, null=True)

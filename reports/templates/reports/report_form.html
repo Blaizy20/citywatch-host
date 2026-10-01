@@ -31,10 +31,10 @@ tailwind.config = { theme: { extend: {
 <div class="flex-1 flex flex-col min-w-0">
 {% include 'reports/partials/resident_header.html' %}
 
-<main id="report-edit-content" class="flex-1 max-w-6xl w-full px-8 py-12 self-center">
+<main id="report-edit-content" class="flex-1 max-w-6xl w-full px-4 sm:px-5 lg:px-8 py-5 lg:py-7 self-center">
 <div class="mb-6">
-<h1 class="text-3xl font-semibold text-primary mb-1">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
-<p class="text-on-surface-variant max-w-2xl">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
+<h1 class="resident-module-title">{% if editing %}Edit Report{% else %}Submit a Report{% endif %}</h1>
+<p class="resident-module-description">Help keep our community safe and well-maintained. Provide details to assist our teams in resolving the issue quickly.</p>
 </div>
 
 {% if messages %}
@@ -43,13 +43,13 @@ tailwind.config = { theme: { extend: {
 {% endfor %}
 {% endif %}
 
-<form id="report-edit-form" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<form id="report-edit-form" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 {% csrf_token %}
 {% if form.non_field_errors %}<div class="lg:col-span-12 rounded-lg bg-error-container p-3 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
 
-<div class="lg:col-span-8 flex flex-col gap-8">
+<div class="lg:col-span-8 flex flex-col gap-5">
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">category</span>
@@ -69,7 +69,7 @@ tailwind.config = { theme: { extend: {
 {% if form.category.errors %}<p class="mt-2 text-xs text-error">{{ form.category.errors|striptags }}</p>{% endif %}
 </div>
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">description</span>
@@ -99,7 +99,7 @@ tailwind.config = { theme: { extend: {
 </div>
 </div>
 
-<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
 <div class="flex items-center gap-3 mb-4">
 <div class="bg-primary-container text-on-primary-container p-1.5 rounded-lg">
 <span class="material-symbols-outlined text-[20px]">location_on</span>

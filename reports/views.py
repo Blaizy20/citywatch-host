@@ -4,8 +4,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib import messages
+from django.utils import timezone
 from .models import Announcement, Report, ReportStatusLog, ReportFeedback
-from .forms import ReportForm, ReportFeedbackForm
+from .forms import AnnouncementForm, ReportForm, ReportFeedbackForm
 from notifications.utils import create_notification
 
 
@@ -26,7 +27,7 @@ def announcement_list(request):
     announcements = Announcement.objects.filter(is_published=True)
     announcement_type = request.GET.get('type', '').strip()
     search_query = request.GET.get('q', '').strip()
-    if announcement_type in {'news', 'advisory'}:
+    if announcement_type in dict(Announcement.TYPE_CHOICES):
         announcements = announcements.filter(announcement_type=announcement_type)
     if search_query:
         announcements = announcements.filter(
@@ -319,4 +320,25 @@ def admin_report_detail(request, report_id):
         'status_logs': status_logs,
         'assignment': assignment,
         'departments': departments,
+    })
+
+
+@login_required
+@user_passes_test(admin_check)
+def admin_announcement_list(request):
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, request.FILES)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.date_published = timezone.now() if announcement.is_published else None
+            announcement.save()
+            messages.success(request, 'Announcement published to the resident dashboard.' if announcement.is_published else 'Draft saved.')
+            return redirect('admin_announcement_list')
+    else:
+        form = AnnouncementForm()
+
+    announcements = Announcement.objects.all().order_by('-date_created')
+    return render(request, 'reports/admin_announcement_list.html', {
+        'form': form,
+        'announcements': announcements,
     })

@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News &amp; Announcements - CityWatch Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{colors:{primary:'#002045','on-primary':'#ffffff','primary-container':'#1a365d','secondary':'#0a6c44','secondary-container':'#9ff5c1',surface:'#f7fafc','surface-container-low':'#f1f4f6','surface-container-lowest':'#ffffff','on-surface':'#181c1e','on-surface-variant':'#43474e',outline:'#74777f','outline-variant':'#c4c6cf',error:'#ba1a1a','error-container':'#ffdad6'}}}};</script>
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style>
+</head>
+<body class="min-h-screen bg-surface text-on-surface antialiased">
+<div class="min-h-screen md:flex">
+<aside class="hidden md:flex md:w-60 md:flex-col md:border-r md:border-outline-variant md:bg-surface-container-lowest">
+<a href="{% url 'analytics_dashboard' %}" class="flex h-16 items-center gap-3 border-b border-outline-variant px-5 text-primary">
+<span class="material-symbols-outlined text-3xl">location_city</span><span class="font-semibold">CityWatch Admin</span>
+</a>
+<nav class="flex-1 space-y-1 p-3" aria-label="Admin navigation">
+<a href="{% url 'analytics_dashboard' %}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
+<a href="{% url 'admin_report_list' %}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"><span class="material-symbols-outlined">description</span>Reports</a>
+<a href="{% url 'admin_announcement_list' %}" aria-current="page" class="flex items-center gap-3 rounded-md bg-secondary-container px-3 py-2.5 text-sm font-semibold text-on-secondary-container"><span class="material-symbols-outlined">campaign</span>News &amp; Announcements</a>
+<a href="{% url 'reports_analytics' %}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"><span class="material-symbols-outlined">analytics</span>Analytics</a>
+<a href="{% url 'map_view' %}" class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-surface-container-low"><span class="material-symbols-outlined">map</span>Map View</a>
+</nav>
+<div class="border-t border-outline-variant p-3"><a href="{% url 'logout' %}" class="block rounded-md px-3 py-2 text-sm font-semibold text-error hover:bg-error-container">Log out</a></div>
+</aside>
+
+<main class="min-w-0 flex-1">
+<header class="flex h-14 items-center justify-between border-b border-outline-variant bg-white px-4 sm:px-6 lg:px-8">
+<a href="{% url 'analytics_dashboard' %}" class="font-semibold text-primary md:hidden">CityWatch Admin</a>
+<p class="ml-auto text-sm font-medium text-on-surface-variant">{{ request.user.get_full_name|default:request.user.username }}</p>
+</header>
+<div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+<div><h1 class="text-2xl font-semibold text-primary sm:text-3xl">News &amp; Announcements</h1><p class="mt-1.5 max-w-2xl text-sm text-on-surface-variant">Publish updates, advisories, events, and schedules for residents.</p></div>
+<a href="{% url 'analytics_dashboard' %}" class="inline-flex min-h-10 items-center gap-1 text-sm font-semibold text-primary hover:underline"><span class="material-symbols-outlined text-lg">arrow_back</span>Dashboard</a>
+</div>
+
+{% if messages %}
+<div class="mb-4 space-y-2">{% for message in messages %}<div class="border border-secondary/30 bg-secondary-container/50 px-4 py-3 text-sm text-on-secondary-container" role="status">{{ message }}</div>{% endfor %}</div>
+{% endif %}
+
+<div class="grid items-start gap-6 lg:grid-cols-[minmax(20rem,0.85fr)_minmax(0,1.15fr)]">
+<section class="border border-outline-variant bg-white">
+<div class="border-b border-outline-variant px-4 py-3"><h2 class="font-semibold">Create an update</h2><p class="mt-0.5 text-xs text-on-surface-variant">Published updates appear on the resident dashboard.</p></div>
+<form method="POST" enctype="multipart/form-data" class="space-y-4 p-4">
+{% csrf_token %}
+{% if form.non_field_errors %}<div class="border border-error/30 bg-error-container px-3 py-2 text-sm text-error">{{ form.non_field_errors }}</div>{% endif %}
+<div>
+<label for="id_title" class="mb-1 block text-sm font-medium">Title</label>
+{{ form.title }}{% if form.title.errors %}<p class="mt-1 text-xs text-error">{{ form.title.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label for="id_announcement_type" class="mb-1 block text-sm font-medium">Update type</label>
+{{ form.announcement_type }}{% if form.announcement_type.errors %}<p class="mt-1 text-xs text-error">{{ form.announcement_type.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label for="id_content" class="mb-1 block text-sm font-medium">Details</label>
+{{ form.content }}{% if form.content.errors %}<p class="mt-1 text-xs text-error">{{ form.content.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label for="id_event_date" class="mb-1 block text-sm font-medium">Event or schedule date <span class="font-normal text-on-surface-variant">(optional)</span></label>
+{{ form.event_date }}{% if form.event_date.errors %}<p class="mt-1 text-xs text-error">{{ form.event_date.errors|striptags }}</p>{% endif %}
+</div>
+<div>
+<label for="id_image" class="mb-1 block text-sm font-medium">Image <span class="font-normal text-on-surface-variant">(optional, up to 5 MB)</span></label>
+{{ form.image }}{% if form.image.errors %}<p class="mt-1 text-xs text-error">{{ form.image.errors|striptags }}</p>{% endif %}
+</div>
+<label class="flex cursor-pointer items-start gap-2 border-t border-outline-variant pt-3 text-sm">
+{{ form.is_published }}<span><span class="block font-medium">Publish now</span><span class="text-xs text-on-surface-variant">Leave unchecked to save this as a draft.</span></span>
+</label>
+<button type="submit" class="inline-flex min-h-10 w-full items-center justify-center gap-2 bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"><span class="material-symbols-outlined text-lg">publish</span>Save update</button>
+</form>
+</section>
+
+<section class="min-w-0">
+<div class="mb-3 flex items-center justify-between gap-3"><h2 class="font-semibold">Recent updates</h2><span class="text-xs text-on-surface-variant">{{ announcements|length }} total</span></div>
+<div class="divide-y divide-outline-variant border-y border-outline-variant bg-white">
+{% for announcement in announcements %}
+<article class="flex gap-3 p-3 sm:p-4">
+{% if announcement.image %}<img src="{{ announcement.image.url }}" alt="" class="h-20 w-24 shrink-0 object-cover">{% endif %}
+<div class="min-w-0 flex-1">
+<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-semibold uppercase text-secondary">{{ announcement.get_announcement_type_display }}</span><span class="text-xs text-on-surface-variant">{% if announcement.is_published %}Published{% else %}Draft{% endif %}</span></div>
+<h3 class="mt-1 font-semibold leading-snug">{{ announcement.title }}</h3>
+<p class="mt-1 line-clamp-2 text-sm text-on-surface-variant">{{ announcement.content }}</p>
+<p class="mt-2 text-xs text-on-surface-variant">{% if announcement.event_date %}Scheduled {{ announcement.event_date|date:'M d, Y, g:i A' }} - {% endif %}{{ announcement.date_created|date:'M d, Y' }}</p>
+</div>
+</article>
+{% empty %}<p class="p-6 text-sm text-on-surface-variant">No updates yet. Create the first resident announcement.</p>{% endfor %}
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+</body>
+</html>

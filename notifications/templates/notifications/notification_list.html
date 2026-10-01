@@ -16,17 +16,17 @@
 {% include 'reports/partials/resident_sidebar.html' %}
 <div class="flex-grow flex flex-col min-w-0">
 {% include 'reports/partials/resident_header.html' %}
-<main class="flex-1 max-w-4xl w-full mx-auto px-5 md:px-8 py-8">
-<div class="flex flex-wrap items-end justify-between gap-4 mb-7">
-<div><p class="text-sm font-semibold uppercase tracking-wider text-secondary">Resident center</p><h1 class="text-3xl font-bold text-primary mt-1">Notifications</h1><p class="text-on-surface-variant mt-2">Stay updated on your reports, assignments, and community announcements.</p></div>
+<main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-5 lg:px-8 py-5 lg:py-7">
+<div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+<div><h1 class="resident-module-title">Notifications</h1><p class="resident-module-description">Stay updated on your reports, assignments, and community announcements.</p></div>
 {% if unread_notifications_count %}<form method="POST" action="{% url 'mark_all_read' %}">{% csrf_token %}<button class="inline-flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low" type="submit"><span class="material-symbols-outlined text-lg">done_all</span>Mark all as read</button></form>{% endif %}
 </div>
 <div class="space-y-3">
 {% for notification in notifications %}
-<article class="bg-surface-container-lowest border {% if not notification.is_read %}border-primary/40{% else %}border-outline-variant{% endif %} rounded-xl p-5">
+<article class="bg-surface-container-lowest border {% if not notification.is_read %}border-primary/40{% else %}border-outline-variant{% endif %} rounded-xl p-4">
 <div class="flex gap-4 items-start"><div class="w-10 h-10 rounded-full {% if not notification.is_read %}bg-primary-container text-white{% else %}bg-surface-container-low text-on-surface-variant{% endif %} flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined">{% if notification.notif_type == 'status_update' %}update{% elif notification.notif_type == 'assignment' %}assignment{% elif notification.notif_type == 'feedback_request' %}rate_review{% else %}campaign{% endif %}</span></div><div class="min-w-0 flex-1"><div class="flex flex-wrap justify-between gap-2"><p class="text-xs uppercase tracking-wider font-bold text-secondary">{{ notification.get_notif_type_display }}</p><time class="text-xs text-on-surface-variant">{{ notification.date_created|date:'M d, Y g:i A' }}</time></div><p class="text-sm mt-2 {% if not notification.is_read %}font-semibold{% endif %}">{{ notification.message }}</p><div class="flex flex-wrap gap-3 mt-4"><form method="POST" action="{% url 'toggle_read' notification.id %}">{% csrf_token %}<button class="text-xs font-bold text-primary hover:underline" type="submit">{% if notification.is_read %}Mark as unread{% else %}Mark as read{% endif %}</button></form>{% if notification.report %}<a class="text-xs font-bold text-primary hover:underline" href="{% url 'report_detail' notification.report.id %}">View report</a>{% endif %}</div></div></div>
 </article>
-{% empty %}<div class="bg-surface-container-lowest border border-dashed border-outline rounded-xl p-12 text-center"><span class="material-symbols-outlined text-4xl text-outline">notifications_none</span><h2 class="font-bold mt-3">You're all caught up</h2><p class="text-sm text-on-surface-variant mt-1">New report updates and community announcements will appear here.</p></div>{% endfor %}
+{% empty %}<div class="bg-surface-container-lowest border border-dashed border-outline rounded-xl p-8 text-center"><span class="material-symbols-outlined text-4xl text-outline">notifications_none</span><h2 class="font-bold mt-3">You're all caught up</h2><p class="text-sm text-on-surface-variant mt-1">New report updates and community announcements will appear here.</p></div>{% endfor %}
 </div>
 </main>
 </div>
