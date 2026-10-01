@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Profile(models.Model):
     ROLE_CHOICES = [
         ('resident', 'Resident'),
@@ -30,3 +31,21 @@ class Profile(models.Model):
 
     def is_resident(self):
         return self.role == 'resident'
+
+
+class OTPChallenge(models.Model):
+    PURPOSE_CHOICES = [
+        ('registration', 'Registration'),
+        ('password_reset', 'Password reset'),
+    ]
+
+    email = models.EmailField(db_index=True)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    code_hash = models.CharField(max_length=256)
+    payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.purpose} OTP for {self.email}"

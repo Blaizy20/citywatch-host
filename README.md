@@ -81,6 +81,32 @@ Open the URL shown in the terminal, normally:
 
 Leave the server terminal running while testing. Press `Ctrl+C` to stop it.
 
+### Email OTP delivery
+
+OTP email verification is enabled for registration and password resets. By default,
+the development console email backend prints each message, including its code, in
+the terminal running Django. This is useful for local testing and does not send
+real email.
+
+To deliver codes to inboxes, set these environment variables before starting the
+server. Use SMTP credentials from your email provider; do not commit credentials
+to the repository.
+
+```powershell
+$env:EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+$env:EMAIL_HOST = "smtp.gmail.com"
+$env:EMAIL_PORT = "587"
+$env:EMAIL_HOST_USER = "your-sender@gmail.com"
+$env:EMAIL_HOST_PASSWORD = "your-provider-app-password"
+$env:EMAIL_USE_TLS = "true"
+$env:EMAIL_USE_SSL = "false"
+$env:DEFAULT_FROM_EMAIL = "CityWatch <your-sender@gmail.com>"
+python manage.py runserver
+```
+
+OTP codes expire after 10 minutes, allow five verification attempts, and can be
+resent after a 60-second cooldown.
+
 ## Local Test Flow
 
 1. Open the landing page at http://127.0.0.1:8000/.
