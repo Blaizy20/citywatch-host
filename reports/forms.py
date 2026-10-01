@@ -11,7 +11,7 @@ class AnnouncementForm(forms.ModelForm):
 
     class Meta:
         model = Announcement
-        fields = ['title', 'announcement_type', 'content', 'image', 'event_date', 'is_published']
+        fields = ['title', 'announcement_type', 'content', 'image', 'event_date', 'is_published', 'is_featured']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full border border-outline-variant bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
@@ -37,9 +37,18 @@ class AnnouncementForm(forms.ModelForm):
             'is_published': forms.CheckboxInput(attrs={
                 'class': 'mt-0.5 h-4 w-4 border-outline-variant text-primary focus:ring-primary',
             }),
+            'is_featured': forms.CheckboxInput(attrs={
+                'class': 'mt-0.5 h-4 w-4 border-outline-variant text-primary focus:ring-primary',
+            }),
         }
 
 class ReportForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].choices = [
+            choice for choice in self.fields['category'].choices if choice[0]
+        ]
+
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
         if photo and photo.size > 5 * 1024 * 1024:

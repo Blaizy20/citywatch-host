@@ -16,6 +16,7 @@ class Announcement(models.Model):
     announcement_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='news')
     image = models.ImageField(upload_to='announcement_images/', blank=True, null=True)
     event_date = models.DateTimeField(blank=True, null=True)
+    is_featured = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_published = models.DateTimeField(blank=True, null=True)
@@ -32,6 +33,7 @@ class Report(models.Model):
         ('streetlight', 'Streetlight'),
         ('drainage', 'Drainage/Flooding'),
         ('facility', 'Public Facility'),
+        ('pets', 'Pets and Animals'),
         ('other', 'Others'),
     ]
 

@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ announcement.title }} - CityWatch</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['"DM Sans"','sans-serif'],display:['"Outfit"','sans-serif']},colors:{primary:'#156b3e','on-primary':'#ffffff','primary-container':'#a0f3be','on-primary-container':'#002111',secondary:'#004785','on-secondary':'#ffffff','secondary-container':'#d6e3ff','on-secondary-container':'#001b3f',surface:'#fdfcff','surface-container-low':'#f8f9fc','surface-container-lowest':'#ffffff','on-surface':'#1a1c1e','on-surface-variant':'#43474e',outline:'#74777f','outline-variant':'#c4c6cf'}}}};</script>
+<style>.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}.mobile-nav-pb{padding-bottom:4rem}@media(min-width:1024px){.mobile-nav-pb{padding-bottom:0}}</style>
+</head>
+<body class="mobile-nav-pb flex min-h-screen bg-surface font-sans text-on-surface antialiased">
+{% include 'reports/partials/resident_sidebar.html' %}
+<div class="flex min-h-screen min-w-0 flex-col lg:ml-0 lg:flex-row">
+<div class="flex min-w-0 flex-1 flex-col">
+{% include 'reports/partials/resident_header.html' %}
+<main class="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-5 lg:px-8 lg:py-8">
+<a href="{% url 'announcements' %}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">arrow_back</span>All updates</a>
+<article id="announcement-detail-content" class="overflow-hidden border border-outline-variant bg-surface-container-lowest">
+{% if announcement.image %}<img src="{{ announcement.image.url }}" alt="" class="max-h-[30rem] w-full object-cover">{% endif %}
+<div class="px-5 py-6 sm:px-8 sm:py-8">
+<div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant"><span class="font-semibold uppercase text-secondary">{{ announcement.get_announcement_type_display }}</span><time>{{ announcement.date_published|default:announcement.date_created|date:'F d, Y' }}</time></div>
+<h1 class="font-display text-3xl font-semibold leading-tight sm:text-4xl">{{ announcement.title }}</h1>
+{% if announcement.event_date %}<p class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-secondary"><span class="material-symbols-outlined">event</span>{{ announcement.event_date|date:'F d, Y, g:i A' }}</p>{% endif %}
+<div class="mt-6 max-w-prose whitespace-normal text-base leading-7 text-on-surface-variant">{{ announcement.content|linebreaks }}</div>
+</div>
+</article>
+</main>
+</div>
+</div>
+</body>
+</html>

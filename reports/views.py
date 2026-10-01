@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Announcement, Report, ReportStatusLog, ReportFeedback
 from .forms import AnnouncementForm, ReportForm, ReportFeedbackForm
@@ -33,10 +34,33 @@ def announcement_list(request):
         announcements = announcements.filter(
             Q(title__icontains=search_query) | Q(content__icontains=search_query)
         )
+    featured_announcement = announcements.filter(is_featured=True).first()
+    if featured_announcement:
+        announcements = announcements.exclude(pk=featured_announcement.pk)
     return render(request, 'reports/announcements.html', {
         'announcements': announcements,
+        'featured_announcement': featured_announcement,
+        'announcement_choices': [
+            ('news', 'News'),
+            ('advisory', 'Advisories'),
+            ('schedule', 'Schedule'),
+            ('announcement', 'Announcements'),
+            ('event', 'Event'),
+        ],
         'announcement_type': announcement_type,
         'search_query': search_query,
+    })
+
+
+@login_required
+def announcement_detail(request, announcement_id):
+    announcement = get_object_or_404(
+        Announcement,
+        pk=announcement_id,
+        is_published=True,
+    )
+    return render(request, 'reports/announcement_detail.html', {
+        'announcement': announcement,
     })
 
 
@@ -80,9 +104,12 @@ def resident_dashboard(request):
     public_reports = public_reports.order_by('-date_submitted')[:20]
     
     announcement_type = request.GET.get('type', '').strip()
-    all_announcements = Announcement.objects.filter(is_published=True).order_by('-date_published')
+    all_announcements = Announcement.objects.filter(is_published=True).order_by('-is_featured', '-date_published')
     if announcement_type:
         all_announcements = all_announcements.filter(announcement_type=announcement_type)
+    featured_announcement = all_announcements.filter(is_featured=True).first()
+    if featured_announcement:
+        all_announcements = all_announcements.exclude(pk=featured_announcement.pk)
     
     from notifications.models import Notification
     all_notifications = Notification.objects.filter(user=request.user).order_by('-date_created')
@@ -94,7 +121,8 @@ def resident_dashboard(request):
         'reports': reports, # All my reports for the My Reports tab
         'active_reports': active_reports, # Just the 5 active ones for the Overview tab
         'stats': stats,
-        'announcements': all_announcements[:4] if not announcement_type else all_announcements[:4], # Overview announcements
+        'announcements': Announcement.objects.filter(is_published=True).order_by('-is_featured', '-date_published')[:4],
+        'featured_announcement': featured_announcement,
         'all_announcements': all_announcements, # Announcements tab
         'public_reports': public_reports, # Public board tab
         'public_total': Report.objects.count(),
@@ -329,9 +357,7 @@ def admin_announcement_list(request):
     if request.method == 'POST':
         form = AnnouncementForm(request.POST, request.FILES)
         if form.is_valid():
-            announcement = form.save(commit=False)
-            announcement.date_published = timezone.now() if announcement.is_published else None
-            announcement.save()
+            announcement = _save_announcement_form(form)
             messages.success(request, 'Announcement published to the resident dashboard.' if announcement.is_published else 'Draft saved.')
             return redirect('admin_announcement_list')
     else:
@@ -340,5 +366,53 @@ def admin_announcement_list(request):
     announcements = Announcement.objects.all().order_by('-date_created')
     return render(request, 'reports/admin_announcement_list.html', {
         'form': form,
-        'announcements': announcements,
+        'announcements': announcements.order_by('-is_featured', '-date_created'),
     })
+
+
+@login_required
+@user_passes_test(admin_check)
+def admin_announcement_edit(request, announcement_id):
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, request.FILES, instance=announcement)
+        if form.is_valid():
+            announcement = _save_announcement_form(form)
+            messages.success(request, 'Announcement updated.')
+            return redirect('admin_announcement_list')
+    else:
+        form = AnnouncementForm(instance=announcement)
+
+    announcements = Announcement.objects.all().order_by('-is_featured', '-date_created')
+    return render(request, 'reports/admin_announcement_list.html', {
+        'form': form,
+        'announcements': announcements,
+        'editing_announcement': announcement,
+    })
+
+
+@login_required
+@user_passes_test(admin_check)
+@require_POST
+def admin_announcement_delete(request, announcement_id):
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    announcement.delete()
+    messages.success(request, 'Announcement deleted.')
+    return redirect('admin_announcement_list')
+
+
+def _save_announcement_form(form):
+    from django.db import transaction
+
+    with transaction.atomic():
+        announcement = form.save(commit=False)
+        if announcement.is_featured:
+            announcement.is_published = True
+        if announcement.is_published:
+            announcement.date_published = announcement.date_published or timezone.now()
+        else:
+            announcement.date_published = None
+        announcement.save()
+        if announcement.is_featured:
+            Announcement.objects.exclude(pk=announcement.pk).update(is_featured=False)
+    return announcement
