@@ -152,11 +152,12 @@
 
         <div id="django-messages" class="w-full"></div>
 
-        <div class="relative flex items-center justify-between max-w-[280px] mx-auto lg:mx-0">
+        <div class="relative flex items-center justify-between max-w-[340px] mx-auto lg:mx-0">
           <div class="step-track"><div id="step-track-fill" class="step-track-fill"></div></div>
           <div class="flex flex-col items-center gap-1.5"><div id="circle-1" class="step-circle active">1</div><span id="label-1" class="step-label active">Account</span></div>
           <div class="flex flex-col items-center gap-1.5"><div id="circle-2" class="step-circle">2</div><span id="label-2" class="step-label">Profile</span></div>
           <div class="flex flex-col items-center gap-1.5"><div id="circle-3" class="step-circle">3</div><span id="label-3" class="step-label">Review</span></div>
+          <div class="flex flex-col items-center gap-1.5"><div id="circle-4" class="step-circle">4</div><span id="label-4" class="step-label">Verify</span></div>
         </div>
 
         <form method="POST" id="register-form" class="space-y-5">
@@ -182,7 +183,13 @@
                 <input autocomplete="new-password" class="block w-full px-4 py-3 pr-12 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="password" name="password" placeholder="Use 8+ characters" required type="password" minlength="8">
                 <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary" data-target="password" aria-label="Show password"><span class="material-symbols-outlined text-[20px]">visibility</span></button>
               </div>
-              <p id="password-hint" class="text-xs text-on-surface-variant pt-1 transition-colors duration-200">Use uppercase, lowercase, a number, and a symbol.</p>
+              <ul id="password-checklist" class="text-xs text-on-surface-variant space-y-1 pt-1 mt-1">
+                <li id="req-length" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> 8+ characters</li>
+                <li id="req-upper" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> One uppercase letter</li>
+                <li id="req-lower" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> One lowercase letter</li>
+                <li id="req-number" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> One number</li>
+                <li id="req-symbol" class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> One symbol</li>
+              </ul>
             </div>
             
             <div class="space-y-1.5">
@@ -215,7 +222,7 @@
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-1.5">
                 <label class="block text-xs font-medium" for="age">Age</label>
-                <input class="block w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="age" name="age" min="1" max="120" placeholder="25" required type="number">
+                <input class="block w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="age" name="age" min="1" max="120" placeholder="25" required type="number" onkeypress="return event.charCode >= 48 && event.charCode <= 57" oninput="if(this.value !== '' && parseInt(this.value) > 120) this.value = '120';">
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-medium" for="sex">Sex</label>
@@ -230,7 +237,10 @@
             
             <div class="space-y-1.5">
               <label class="block text-xs font-medium" for="mobile">Mobile Number</label>
-              <input class="block w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="mobile" name="mobile" placeholder="0912 345 6789" required type="tel">
+              <div class="flex">
+                <span class="inline-flex items-center px-4 rounded-l-xl border border-r-0 border-outline-variant bg-surface-container text-on-surface-variant font-medium text-sm">+63</span>
+                <input class="block w-full px-4 py-3 border border-outline-variant rounded-r-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200" id="mobile" name="mobile" placeholder="912 345 6789" required type="tel">
+              </div>
             </div>
             
             <div class="space-y-1.5">
@@ -417,48 +427,81 @@
     emailInput.addEventListener('blur', () => validateField(emailInput, emailError, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value), 'Please enter a valid email address.'));
     emailInput.addEventListener('input', () => { emailError.classList.add('hidden'); emailInput.classList.remove('border-error', 'ring-error'); });
     
-    function validatePasswordState() {
-      const pVal = password.value;
-      if (!pVal) return false;
-      const missing = [];
-      if (pVal.length < 8) missing.push("8+ characters");
-      if (!/[A-Z]/.test(pVal)) missing.push("an uppercase letter");
-      if (!/[a-z]/.test(pVal)) missing.push("a lowercase letter");
-      if (!/[0-9]/.test(pVal)) missing.push("a number (e.g., 123)");
-      if (!/[^A-Za-z0-9]/.test(pVal)) missing.push("a symbol (e.g., !@#)");
-      return missing;
+    const checklist = document.getElementById('password-checklist');
+    if (checklist) {
+      Array.from(checklist.children).forEach(li => {
+         li.style.transition = 'all 0.4s ease';
+         li.dataset.checked = "false";
+      });
     }
-    
-    password.addEventListener('blur', () => {
-      const pVal = password.value;
-      if (!pVal) return;
-      const missing = validatePasswordState();
+
+    const handlePasswordValidation = () => {
+      const val = password.value;
+      const reqTexts = {
+        'req-length': '8+ characters',
+        'req-upper': 'One uppercase letter',
+        'req-lower': 'One lowercase letter',
+        'req-number': 'One number',
+        'req-symbol': 'One symbol'
+      };
       
-      if (missing.length > 0) {
-        passwordHint.innerHTML = '<span class="flex items-start gap-1 font-semibold"><span class="material-symbols-outlined text-[16px] mt-0.5">error</span><span>Missing: ' + missing.join(', ') + '</span></span>';
-        passwordHint.classList.add('text-error');
-        passwordHint.classList.remove('text-on-surface-variant', 'text-primary');
-        password.classList.add('border-error', 'ring-error');
+      const checks = [
+        { id: 'req-length', cond: val.length >= 8 },
+        { id: 'req-upper', cond: /[A-Z]/.test(val) },
+        { id: 'req-lower', cond: /[a-z]/.test(val) },
+        { id: 'req-number', cond: /[0-9]/.test(val) },
+        { id: 'req-symbol', cond: /[^A-Za-z0-9]/.test(val) }
+      ];
+
+      checks.forEach(({id, cond}) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        
+        const wasChecked = el.dataset.checked === "true";
+        
+        if (cond) {
+          el.innerHTML = '<span class="material-symbols-outlined text-[14px] text-primary">check_circle</span> <span class="text-primary font-semibold">' + reqTexts[id] + '</span>';
+          el.dataset.checked = "true";
+          if (!wasChecked && checklist) {
+             el.style.transform = 'scale(1.05)';
+             el.style.opacity = '0.5';
+             setTimeout(() => {
+               checklist.appendChild(el);
+               el.style.transform = 'scale(1)';
+               el.style.opacity = '1';
+             }, 150);
+          }
+        } else {
+          el.innerHTML = '<span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> <span class="text-on-surface-variant">' + reqTexts[id] + '</span>';
+          el.dataset.checked = "false";
+          if (wasChecked && checklist) {
+             checklist.prepend(el);
+          }
+        }
+      });
+      
+      const allChecked = checks.every(c => c.cond);
+      if (allChecked) {
+          password.classList.remove('border-error', 'ring-error');
+      } else if (val.length > 0) {
+          password.classList.add('border-error', 'ring-error');
       } else {
-        passwordHint.innerHTML = '<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">check_circle</span>Password is secure.</span>';
-        passwordHint.classList.remove('text-error', 'text-on-surface-variant');
-        passwordHint.classList.add('text-primary', 'font-semibold');
-        password.classList.remove('border-error', 'ring-error');
+          password.classList.remove('border-error', 'ring-error');
       }
       
-      if (confirmPassword.value) confirmPassword.dispatchEvent(new Event('blur'));
-    });
+      if (confirmPassword.value) confirmPassword.dispatchEvent(new Event('input'));
+    };
+
+    password.addEventListener('input', handlePasswordValidation);
+    password.addEventListener('blur', handlePasswordValidation);
     
-    password.addEventListener('input', () => {
-      passwordHint.textContent = 'Use uppercase, lowercase, a number, and a symbol.';
-      passwordHint.classList.remove('text-error', 'text-primary', 'font-semibold');
-      passwordHint.classList.add('text-on-surface-variant');
-      password.classList.remove('border-error', 'ring-error');
-    });
-    
-    confirmPassword.addEventListener('blur', () => {
+    const handleConfirmPasswordValidation = () => {
       const cpVal = confirmPassword.value;
-      if (!cpVal) return;
+      if (!cpVal) {
+        passwordMatch.classList.add('hidden');
+        confirmPassword.classList.remove('border-error', 'ring-error');
+        return;
+      }
       
       if (password.value !== cpVal) {
         passwordMatch.innerHTML = '<span class="flex items-center gap-1 font-semibold"><span class="material-symbols-outlined text-[16px]">error</span>Passwords do not match.</span>';
@@ -471,12 +514,10 @@
         passwordMatch.classList.add('text-primary', 'font-semibold');
         confirmPassword.classList.remove('border-error', 'ring-error');
       }
-    });
+    };
 
-    confirmPassword.addEventListener('input', () => {
-      passwordMatch.classList.add('hidden');
-      confirmPassword.classList.remove('border-error', 'ring-error');
-    });
+    confirmPassword.addEventListener('input', handleConfirmPasswordValidation);
+    confirmPassword.addEventListener('blur', handleConfirmPasswordValidation);
     
     // Step navigation
     const steps = [1, 2, 3]; 
@@ -499,15 +540,15 @@
         label.classList.toggle('active', number === target); 
         circle.textContent = number < target ? '✓' : number; 
       }); 
-      document.getElementById('step-track-fill').style.width = target === 1 ? '0%' : target === 2 ? '50%' : '100%'; 
+      document.getElementById('step-track-fill').style.width = target === 1 ? '0%' : target === 2 ? '33.33%' : target === 3 ? '66.66%' : '100%'; 
     }
     
     document.getElementById('to-step-2').addEventListener('click', () => { 
       const isUsernameValid = usernameInput.value.length >= 3;
       const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
       
-      const missing = validatePasswordState();
-      const isPasswordValid = missing && missing.length === 0;
+      const pVal = password.value;
+      const isPasswordValid = pVal.length >= 8 && /[A-Z]/.test(pVal) && /[a-z]/.test(pVal) && /[0-9]/.test(pVal) && /[^A-Za-z0-9]/.test(pVal);
       
       const cpVal = confirmPassword.value;
       const isMatch = password.value === cpVal && cpVal.length > 0;
@@ -531,7 +572,7 @@
         document.getElementById('preview-email').textContent = document.getElementById('email').value || '--';
         document.getElementById('preview-email').title = document.getElementById('email').value || '';
         document.getElementById('preview-name').textContent = `${document.getElementById('first_name').value} ${document.getElementById('last_name').value}`.trim() || '--';
-        document.getElementById('preview-mobile').textContent = document.getElementById('mobile').value || '--';
+        document.getElementById('preview-mobile').textContent = document.getElementById('mobile').value ? '+63 ' + document.getElementById('mobile').value : '--';
         document.getElementById('preview-age-sex').textContent = `${document.getElementById('age').value || '--'} / ${document.getElementById('sex').value || '--'}`;
         document.getElementById('preview-barangay').textContent = document.getElementById('barangay').value || '--';
         document.getElementById('preview-address').textContent = document.getElementById('address').value || '--';
@@ -547,12 +588,13 @@
     if (mobileInput) {
       mobileInput.addEventListener('input', (e) => {
         let val = e.target.value.replace(/\D/g, '');
-        if (val.length > 11) val = val.substring(0, 11);
+        if (val.startsWith('0')) val = val.substring(1);
+        if (val.length > 10) val = val.substring(0, 10);
         
         let formatted = '';
-        if (val.length > 0) formatted += val.substring(0, 4);
-        if (val.length > 4) formatted += ' ' + val.substring(4, 7);
-        if (val.length > 7) formatted += ' ' + val.substring(7, 11);
+        if (val.length > 0) formatted += val.substring(0, 3);
+        if (val.length > 3) formatted += ' ' + val.substring(3, 6);
+        if (val.length > 6) formatted += ' ' + val.substring(6, 10);
         
         e.target.value = formatted;
       });
@@ -567,6 +609,10 @@
       submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span><span>Creating Account...</span>';
       
       const formData = new FormData(registerForm);
+      let mobileVal = formData.get('mobile');
+      if (mobileVal) {
+        formData.set('mobile', '+63 ' + mobileVal);
+      }
       try {
         const response = await fetch(window.location.href, {
           method: 'POST',

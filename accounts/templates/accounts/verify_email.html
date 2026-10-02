@@ -35,10 +35,46 @@
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .form-animate { animation: fadeInUp .7s ease forwards; }
-    @media (prefers-reduced-motion: reduce) { .form-animate { animation: none !important; } }
+    .step-track { position: absolute; top: 13px; left: 13px; right: 13px; height: 2px; background: #e0e3e5; z-index: 0; }
+    .step-track-fill { height: 100%; width: 100%; background: #156b3e; transition: width .4s ease; }
+    .step-circle { width: 28px; height: 28px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; background: #fff; border: 2px solid #c4c6cf; color: #74777f; position: relative; z-index: 1; transition: all .3s; }
+    .step-circle.active, .step-circle.done { border-color: #156b3e; background: #156b3e; color: #fff; }
+    .step-label { font-size: .7rem; font-weight: 600; color: #74777f; transition: all .3s; }
+    .step-label.active { color: #156b3e; }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cardPop { from { opacity: 0; transform: scale(0.85) translateY(24px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes checkDraw { 0% { stroke-dashoffset: 80; } 100% { stroke-dashoffset: 0; } }
+    @keyframes ringPulse { 0%, 100% { transform: scale(1); opacity: .4; } 50% { transform: scale(1.25); opacity: 0; } }
+    .success-overlay { animation: overlayIn 0.35s ease forwards; }
+    .success-card { animation: cardPop 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .check-svg { stroke-dasharray: 80; stroke-dashoffset: 80; animation: checkDraw 0.5s ease 0.45s forwards; }
+    .ring-pulse { animation: ringPulse 1.8s ease-in-out 0.6s infinite; }
+    @media (prefers-reduced-motion: reduce) { .form-animate, *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; } }
   </style>
 </head>
 <body class="bg-surface text-on-surface font-sans antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+
+  <!-- SUCCESS OVERLAY -->
+  <div id="success-overlay" class="fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden success-overlay" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="success-card bg-surface rounded-3xl p-10 max-w-sm w-[90%] flex flex-col items-center text-center shadow-2xl">
+      <!-- Animated Check Icon -->
+      <div class="relative mb-6">
+        <div class="ring-pulse absolute inset-0 rounded-full bg-primary-container"></div>
+        <div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center relative">
+          <svg class="w-10 h-10" viewBox="0 0 40 40" fill="none">
+            <polyline class="check-svg" points="8,21 17,30 33,13" stroke="#156b3e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <h2 id="success-title" class="text-2xl font-display font-bold text-on-surface mb-2">Email Verified</h2>
+      <p class="text-on-surface-variant text-sm leading-relaxed mb-1">Your account is ready.</p>
+      <p class="text-xs text-on-surface-variant/70 mb-8">Redirecting you to login...</p>
+      <!-- Progress bar -->
+      <div class="w-full h-1 bg-outline-variant rounded-full overflow-hidden">
+        <div id="redirect-bar" class="h-full bg-primary rounded-full" style="width: 0%; transition: width 2.5s linear;"></div>
+      </div>
+    </div>
+  </div>
   <header class="w-full sticky top-0 bg-surface/90 backdrop-blur-md border-b border-outline-variant z-50">
     <div class="flex justify-between items-center h-14 px-5 max-w-7xl mx-auto">
       <a class="flex items-center gap-2 text-primary" href="{% url 'landing' %}"><span class="material-symbols-outlined">location_city</span><span class="text-xl font-bold">CityWatch</span></a>
@@ -84,42 +120,49 @@
           <span class="text-xl font-bold text-primary">CityWatch</span>
         </div>
 
+        <!-- PROGRESS BAR -->
+        <div class="relative flex items-center justify-between max-w-[340px] mx-auto lg:mx-0 mb-8">
+          <div class="step-track"><div id="step-track-fill" class="step-track-fill" style="width: 100%;"></div></div>
+          <div class="flex flex-col items-center gap-1.5"><div class="step-circle done">✓</div><span class="step-label">Account</span></div>
+          <div class="flex flex-col items-center gap-1.5"><div class="step-circle done">✓</div><span class="step-label">Profile</span></div>
+          <div class="flex flex-col items-center gap-1.5"><div class="step-circle done">✓</div><span class="step-label">Review</span></div>
+          <div class="flex flex-col items-center gap-1.5"><div class="step-circle active">4</div><span class="step-label active">Verify</span></div>
+        </div>
+
         <div class="mb-8">
           <h1 class="text-2xl lg:text-3xl font-display font-bold text-on-surface">Check your email</h1>
           <p class="text-base text-on-surface-variant mt-1">We sent a six-digit verification code to <span class="font-semibold text-on-surface">{{ email }}</span>.</p>
           <p class="text-sm text-on-surface-variant mt-2">Temporary email services may block or filter automated verification messages. If the code does not arrive, please check spam/junk or use a regular email address.</p>
         </div>
 
-        {% if error %}
-          <div class="mb-5 rounded-2xl border border-error/30 bg-error-container/80 text-on-error-container px-4 py-3 text-sm flex items-start gap-2">
-            <span class="material-symbols-outlined text-[18px] mt-0.5">error</span>
-            <span>{{ error }}</span>
-          </div>
-        {% endif %}
+        <div id="django-messages">
+          {% if error %}
+            <div class="mb-5 rounded-2xl border border-error/30 bg-error-container/80 text-on-error-container px-4 py-3 text-sm flex items-start gap-2">
+              <span class="material-symbols-outlined text-[18px] mt-0.5">error</span>
+              <span>{{ error }}</span>
+            </div>
+          {% endif %}
+  
+          {% if notice %}
+            <div class="mb-5 rounded-2xl border border-primary/20 bg-primary-container/40 text-on-primary-container px-4 py-3 text-sm flex items-start gap-2">
+              <span class="material-symbols-outlined text-[18px] mt-0.5">info</span>
+              <span>{{ notice }}</span>
+            </div>
+          {% endif %}
+        </div>
 
-        {% if notice %}
-          <div class="mb-5 rounded-2xl border border-primary/20 bg-primary-container/40 text-on-primary-container px-4 py-3 text-sm flex items-start gap-2">
-            <span class="material-symbols-outlined text-[18px] mt-0.5">info</span>
-            <span>{{ notice }}</span>
-          </div>
-        {% endif %}
-
-        <form method="POST" class="space-y-5">
+        <form method="POST" id="verify-form" class="space-y-5">
           {% csrf_token %}
           <div class="space-y-1.5">
             <label class="block text-xs font-medium" for="code">Verification Code</label>
             <input class="block w-full px-4 py-3 border border-outline-variant rounded-xl bg-surface text-on-surface placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-on-surface focus:border-on-surface transition-all duration-200 tracking-[0.6em] text-center" id="code" name="code" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="123456" required>
+            <div class="flex flex-col gap-1 items-start text-xs pt-1">
+              <p id="resend-feedback" class="flex items-center gap-1"></p>
+              <p class="text-on-surface-variant text-left">Didn't receive a code? <button type="submit" formnovalidate name="action" value="resend" class="text-secondary font-bold hover:underline bg-transparent border-0 p-0 cursor-pointer {% if not can_resend %}opacity-80{% endif %}" {% if not can_resend %}title="Please wait a minute before requesting another code."{% endif %}>Resend code</button></p>
+            </div>
           </div>
-
-          <div class="flex gap-3 pt-2">
-            <button type="submit" name="action" value="resend" class="min-h-[46px] px-6 py-3 bg-surface border border-outline-variant rounded-full font-semibold text-sm hover:bg-surface-container transition-all {% if not can_resend %}opacity-80{% endif %}" {% if not can_resend %}title="Please wait a minute before requesting another code."{% endif %}>
-              Send again OTP
-            </button>
-            <button type="submit" class="w-full min-h-[46px] py-3 bg-primary text-white rounded-full font-semibold text-sm hover:opacity-90 hover:shadow-lg transition-all flex justify-center items-center gap-2">
-              <span>Verify email</span>
-              <span class="material-symbols-outlined text-[18px]">check</span>
-            </button>
-          </div>
+          <!-- Hidden submit for JS processing -->
+          <button type="submit" id="verify-submit-btn" class="hidden" name="action" value="verify">Verify email</button>
         </form>
 
         <div class="mt-8 pt-6 border-t border-outline-variant/60 text-center">
@@ -142,3 +185,89 @@
   </footer>
 </body>
 </html>
+  <script>
+    const verifyForm = document.getElementById('verify-form');
+    
+    if (verifyForm) {
+      verifyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitter = e.submitter;
+        const action = submitter ? submitter.value : 'verify';
+        const isResend = action === 'resend';
+        
+        const formData = new FormData(verifyForm);
+        formData.append('action', action);
+        
+        let originalBtnHtml = '';
+        if (submitter && submitter.innerHTML) {
+          originalBtnHtml = submitter.innerHTML;
+          if (isResend) submitter.innerHTML = 'Sending...';
+        }
+        
+        try {
+          const res = await fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+          });
+          const data = await res.json();
+          
+          if (isResend) {
+            if (submitter) submitter.innerHTML = originalBtnHtml;
+            const feedback = document.getElementById('resend-feedback');
+            if (data.success) {
+              feedback.innerHTML = `<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span><span class="text-primary font-semibold">${data.notice}</span>`;
+            } else {
+              feedback.innerHTML = `<span class="material-symbols-outlined text-[16px] text-error">error</span><span class="text-error font-semibold">${data.error}</span>`;
+            }
+          } else {
+            if (data.success) {
+              const overlay = document.getElementById('success-overlay');
+              const bar = document.getElementById('redirect-bar');
+              if (overlay) overlay.classList.remove('hidden');
+              setTimeout(() => { if (bar) bar.style.width = '100%'; }, 50);
+              setTimeout(() => { window.location.href = data.redirect; }, 2800);
+            } else {
+              if (submitter) submitter.innerHTML = originalBtnHtml;
+              const codeInput = document.getElementById('code');
+              if (codeInput) {
+                 codeInput.classList.add('border-error', 'ring-error');
+                 codeInput.style.transform = 'translateX(5px)';
+                 setTimeout(() => codeInput.style.transform = 'translateX(-5px)', 100);
+                 setTimeout(() => codeInput.style.transform = 'translateX(5px)', 200);
+                 setTimeout(() => codeInput.style.transform = 'none', 300);
+              }
+              const errBoxContainer = document.getElementById('django-messages');
+              if (errBoxContainer) {
+                errBoxContainer.innerHTML = `<div class="mb-5 rounded-2xl border border-error/30 bg-error-container/80 text-on-error-container px-4 py-3 text-sm flex items-start gap-2"><span class="material-symbols-outlined text-[18px] mt-0.5">error</span><span>${data.error}</span></div>`;
+              }
+            }
+          }
+        } catch (err) {
+          if (submitter) submitter.innerHTML = originalBtnHtml;
+        }
+      });
+    }
+    
+    const codeInput = document.getElementById('code');
+    if (codeInput) {
+      codeInput.addEventListener('input', () => {
+        codeInput.value = codeInput.value.replace(/\D/g, '');
+        codeInput.classList.remove('border-error', 'ring-error');
+        if (codeInput.value.length === 6) {
+           const submitBtn = document.getElementById('verify-submit-btn');
+           if (submitBtn) submitBtn.click();
+        }
+      });
+      codeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+           e.preventDefault(); 
+           if (codeInput.value.length === 6) {
+             const submitBtn = document.getElementById('verify-submit-btn');
+             if (submitBtn) submitBtn.click();
+           }
+        }
+      });
+    }
+  </script>

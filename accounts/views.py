@@ -36,6 +36,9 @@ def _issue_otp(email, purpose, payload=None):
         'This code expires in 10 minutes.\n\n'
         'If you did not request this code, you can ignore this email.'
     )
+    
+    # DEV HELPER: Print the code to the terminal so it's easy to find!
+    print(f"\n{'='*40}\n[DEV] VERIFICATION CODE FOR {email}: {code}\n{'='*40}\n")
     challenge = OTPChallenge.objects.create(
         email=email,
         purpose=purpose,
@@ -169,6 +172,7 @@ def verify_email_view(request):
 
     error = ''
     notice = ''
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
     if request.method == 'POST' and request.POST.get('action') == 'resend':
         try:
             challenge = _issue_otp(challenge.email, 'registration', challenge.payload)
@@ -178,10 +182,19 @@ def verify_email_view(request):
             error = str(exception)
         except Exception:
             error = 'We could not send your code. Check your email settings and try again.'
+            
+        if is_ajax:
+            from django.http import JsonResponse
+            if error:
+                return JsonResponse({'success': False, 'error': error})
+            return JsonResponse({'success': True, 'notice': notice})
     elif request.method == 'POST':
         code = request.POST.get('code', '').strip()
         if not code.isdigit() or len(code) != 6 or not _valid_otp(challenge, code):
             error = 'That code is incorrect, expired, or has reached its attempt limit.'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({'success': False, 'error': error})
         else:
             data = challenge.payload
             if User.objects.filter(username=data['username']).exists() or User.objects.filter(email__iexact=challenge.email).exists():
@@ -211,6 +224,12 @@ def verify_email_view(request):
                 )
                 challenge.delete()
             request.session.pop('registration_otp_id', None)
+            
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                from django.urls import reverse
+                from django.http import JsonResponse
+                return JsonResponse({'success': True, 'redirect': reverse('login')})
+                
             messages.success(request, 'Email verified. Your account is ready; you can now log in.')
             return redirect('login')
 
@@ -255,6 +274,7 @@ def password_reset_view(request):
         notice = 'If an active account uses that email, a verification code has been sent.'
         reset_started = True
     elif request.method == 'POST' and request.POST.get('action') == 'resend_code':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         email = request.session.get('password_reset_email', '')
         user = User.objects.filter(email__iexact=email, is_active=True).first()
         if user:
@@ -266,12 +286,21 @@ def password_reset_view(request):
             except Exception:
                 error = 'We could not send your code. Check your email settings and try again.'
         notice = 'If an active account uses that email, a verification code has been sent.'
+        if is_ajax:
+            from django.http import JsonResponse
+            if error:
+                return JsonResponse({'success': False, 'error': error})
+            return JsonResponse({'success': True, 'notice': notice})
         reset_started = True
     elif request.method == 'POST' and request.POST.get('action') == 'reset_password':
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        invalid_code = False
         if not challenge or challenge.email.lower() != email.lower():
             error = 'Request a new code to continue.'
+            invalid_code = True
         elif not _valid_otp(challenge, request.POST.get('code', '').strip()):
             error = 'That code is incorrect, expired, or has reached its attempt limit.'
+            invalid_code = True
         else:
             user = User.objects.filter(email__iexact=email, is_active=True).first()
             new_password = request.POST.get('new_password', '')
@@ -291,8 +320,17 @@ def password_reset_view(request):
                     OTPChallenge.objects.filter(email__iexact=email, purpose='password_reset').delete()
                     for key in ('password_reset_started', 'password_reset_email', 'password_reset_otp_id'):
                         request.session.pop(key, None)
+                    if is_ajax:
+                        from django.urls import reverse
+                        from django.http import JsonResponse
+                        return JsonResponse({'success': True, 'redirect': reverse('login')})
                     messages.success(request, 'Password updated. Log in with your new password.')
                     return redirect('login')
+        
+        if is_ajax and error:
+            from django.http import JsonResponse
+            return JsonResponse({'success': False, 'error': error, 'invalid_code': invalid_code})
+            
         reset_started = True
 
     return render(request, 'accounts/password_reset.html', {
