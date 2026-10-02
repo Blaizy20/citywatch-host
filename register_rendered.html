@@ -1,4 +1,4 @@
-{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,8 +38,7 @@
     .step-track { position: absolute; top: 13px; left: 13px; right: 13px; height: 2px; background: #e0e3e5; z-index: 0; }
     .step-track-fill { height: 100%; width: 0; background: #156b3e; transition: width .4s ease; }
     .step-circle { width: 28px; height: 28px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; background: #fff; border: 2px solid #c4c6cf; color: #74777f; position: relative; z-index: 1; transition: all .3s; }
-    .step-circle.active { border-color: #156b3e; background: #fff; color: #156b3e; }
-    .step-circle.done { border-color: #156b3e; background: #156b3e; color: #fff; }
+    .step-circle.active, .step-circle.done { border-color: #156b3e; background: #156b3e; color: #fff; }
     .step-label { font-size: .7rem; font-weight: 600; color: #74777f; transition: all .3s; }
     .step-label.active { color: #156b3e; }
     @keyframes fadeInSlide { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
@@ -80,8 +79,8 @@
   </div>
   <header class="w-full sticky top-0 bg-surface/90 backdrop-blur-md border-b border-outline-variant z-50">
     <div class="flex justify-between items-center h-14 px-5 max-w-7xl mx-auto">
-      <a class="flex items-center gap-2 text-primary" href="{% url 'landing' %}"><span class="material-symbols-outlined">location_city</span><span class="text-xl font-bold">CityWatch</span></a>
-      <div class="flex items-center gap-3 text-sm font-semibold"><a class="flex items-center gap-1 text-on-surface-variant hover:text-primary px-4 py-2" href="{% url 'landing' %}"><span class="material-symbols-outlined text-[18px]">arrow_back</span>Back to Home</a></div>
+      <a class="flex items-center gap-2 text-primary" href="/"><span class="material-symbols-outlined">location_city</span><span class="text-xl font-bold">CityWatch</span></a>
+      <div class="flex items-center gap-3 text-sm font-semibold"><a class="flex items-center gap-1 text-on-surface-variant hover:text-primary px-4 py-2" href="/"><span class="material-symbols-outlined text-[18px]">arrow_back</span>Back to Home</a></div>
     </div>
   </header>
 
@@ -111,32 +110,67 @@
           
           <!-- Draggable Gallery -->
           <div id="activity-gallery" class="flex overflow-x-auto snap-x snap-mandatory pb-6 w-full cursor-grab active:cursor-grabbing" style="scrollbar-width: none;">
-            {% for report in recent_reports %}
+            
             <div class="snap-center shrink-0 w-full min-w-full px-4">
               <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover:bg-black/30 transition-colors duration-300 flex flex-col h-full mx-auto max-w-sm">
                 <div class="flex justify-between items-start mb-4">
-                  {% if report.status == 'resolved' %}
-                  <span class="inline-flex items-center gap-1.5 bg-[#6ee7b7]/20 px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#6ee7b7] uppercase tracking-wide border border-[#6ee7b7]/20">
-                    <span class="material-symbols-outlined text-[14px]">check_circle</span>Resolved
-                  </span>
-                  {% elif report.status == 'in_progress' %}
-                  <span class="inline-flex items-center gap-1.5 bg-[#fcd34d]/20 px-2.5 py-1 rounded-lg text-[11px] font-bold text-[#fcd34d] uppercase tracking-wide border border-[#fcd34d]/20">
-                    <span class="material-symbols-outlined text-[14px]">engineering</span>In Progress
-                  </span>
-                  {% else %}
+                  
                   <span class="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white/90 uppercase tracking-wide border border-white/20">
                     <span class="material-symbols-outlined text-[14px]">pending</span>Pending
                   </span>
-                  {% endif %}
-                  <span class="text-[11px] font-medium text-white/60">{{ report.date_submitted|timesince }}</span>
+                  
+                  <span class="text-[11px] font-medium text-white/60">4 days</span>
                 </div>
-                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">{{ report.title }}</h4>
-                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">{{ report.description }}</p>
+                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">PogiAko123!</h4>
+                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">PogiAko123!</p>
               </div>
             </div>
-            {% empty %}
-            <p class="text-white/60 text-sm pl-2">No recent activity.</p>
-            {% endfor %}
+            
+            <div class="snap-center shrink-0 w-full min-w-full px-4">
+              <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover:bg-black/30 transition-colors duration-300 flex flex-col h-full mx-auto max-w-sm">
+                <div class="flex justify-between items-start mb-4">
+                  
+                  <span class="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white/90 uppercase tracking-wide border border-white/20">
+                    <span class="material-symbols-outlined text-[14px]">pending</span>Pending
+                  </span>
+                  
+                  <span class="text-[11px] font-medium text-white/60">4 days, 1 hour</span>
+                </div>
+                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">dwada</h4>
+                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">dwadada</p>
+              </div>
+            </div>
+            
+            <div class="snap-center shrink-0 w-full min-w-full px-4">
+              <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover:bg-black/30 transition-colors duration-300 flex flex-col h-full mx-auto max-w-sm">
+                <div class="flex justify-between items-start mb-4">
+                  
+                  <span class="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white/90 uppercase tracking-wide border border-white/20">
+                    <span class="material-symbols-outlined text-[14px]">pending</span>Pending
+                  </span>
+                  
+                  <span class="text-[11px] font-medium text-white/60">4 days, 1 hour</span>
+                </div>
+                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">asdasdasd</h4>
+                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">sadasdad</p>
+              </div>
+            </div>
+            
+            <div class="snap-center shrink-0 w-full min-w-full px-4">
+              <div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover:bg-black/30 transition-colors duration-300 flex flex-col h-full mx-auto max-w-sm">
+                <div class="flex justify-between items-start mb-4">
+                  
+                  <span class="inline-flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white/90 uppercase tracking-wide border border-white/20">
+                    <span class="material-symbols-outlined text-[14px]">pending</span>Pending
+                  </span>
+                  
+                  <span class="text-[11px] font-medium text-white/60">4 days, 13 hours</span>
+                </div>
+                <h4 class="text-white font-display font-bold text-xl mb-2 line-clamp-1">dwad</h4>
+                <p class="text-white/70 text-sm leading-relaxed line-clamp-3 mt-auto">adadad</p>
+              </div>
+            </div>
+            
           </div>
         </div>
       </div>
@@ -162,7 +196,7 @@
         </div>
 
         <form method="POST" id="register-form" class="space-y-5">
-          {% csrf_token %}
+          <input type="hidden" name="csrfmiddlewaretoken" value="1seIYw8HAEaAfac6uHueOkk8mzgvRZruB0qAS744E170CVnX77ARwebgbVD4BXhJ">
           
           <!-- STEP 1: Account -->
           <div id="step-1" class="step-panel space-y-5">
@@ -346,7 +380,7 @@
         </form>
         
         <div class="text-center pt-8 border-t border-outline-variant/50">
-          <p class="text-sm text-on-surface-variant">Already have an account? <a class="text-primary font-bold hover:underline ml-1" href="{% url 'login' %}">Login</a></p>
+          <p class="text-sm text-on-surface-variant">Already have an account? <a class="text-primary font-bold hover:underline ml-1" href="/accounts/login/">Login</a></p>
         </div>
       </div>
     </div>
