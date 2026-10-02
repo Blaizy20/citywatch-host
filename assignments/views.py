@@ -29,20 +29,21 @@ def assign_report(request, report_id):
             if report.status == 'pending':
                 report.status = 'acknowledged'
                 report.save()
-                ReportStatusLog.objects.create(
-                    report=report,
-                    old_status=old_status,
-                    new_status='acknowledged',
-                    changed_by=request.user,
-                    notes=f'Assigned to {assignment.department}'
-                )
+            
+            ReportStatusLog.objects.create(
+                report=report,
+                old_status=old_status,
+                new_status=report.status,
+                changed_by=request.user,
+                notes=f'Assigned to {assignment.department.name}'
+            )
 
-                create_notification(
-                    user=report.resident,
-                    message=f'Your report <b>{report.title}</b> has been assigned and is now being reviewed.',
-                    report=report,
-                    notif_type='assignment'
-                )
+            create_notification(
+                user=report.resident,
+                message=f'Your report <b>{report.title}</b> has been assigned and is now being reviewed.',
+                report=report,
+                notif_type='assignment'
+            )
 
             messages.success(request, f'Report assigned to {department.name}!')
 

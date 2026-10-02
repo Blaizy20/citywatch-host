@@ -1,4 +1,6 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html = '''{% extends 'analytics/admin_base.html' %}
 {% load static %}
 {% block content %}
 
@@ -161,3 +163,7 @@
 </div>
 
 {% endblock %}
+'''
+
+with codecs.open('d:/citywatch/analytics/templates/analytics/dashboard.html', 'w', 'utf-8') as f:
+    f.write(html)

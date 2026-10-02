@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from .models import OTPChallenge, Profile
@@ -39,6 +40,12 @@ def _issue_otp(email, purpose, payload=None):
     
     # DEV HELPER: Print the code to the terminal so it's easy to find!
     print(f"\n{'='*40}\n[DEV] VERIFICATION CODE FOR {email}: {code}\n{'='*40}\n")
+    
+    html_message = render_to_string('accounts/email_verification.html', {
+        'action': action,
+        'code': code,
+    })
+    
     challenge = OTPChallenge.objects.create(
         email=email,
         purpose=purpose,
@@ -55,6 +62,7 @@ def _issue_otp(email, purpose, payload=None):
             settings.DEFAULT_FROM_EMAIL,
             [email],
             fail_silently=False,
+            html_message=html_message,
         )
         if not sent:
             raise RuntimeError('Email backend did not send the message.')
@@ -242,7 +250,7 @@ def verify_email_view(request):
 
 
 def password_reset_view(request):
-    if request.method == 'GET' and request.GET.get('change') == '1':
+    if request.method == 'GET':
         for key in ('password_reset_started', 'password_reset_email', 'password_reset_otp_id'):
             request.session.pop(key, None)
 
@@ -271,7 +279,8 @@ def password_reset_view(request):
                 error = str(exception)
             except Exception:
                 error = 'We could not send your code. Check your email settings and try again.'
-        notice = 'If an active account uses that email, a verification code has been sent.'
+        if not error:
+            notice = 'If an active account uses that email, a verification code has been sent.'
         reset_started = True
     elif request.method == 'POST' and request.POST.get('action') == 'resend_code':
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
@@ -285,7 +294,8 @@ def password_reset_view(request):
                 error = str(exception)
             except Exception:
                 error = 'We could not send your code. Check your email settings and try again.'
-        notice = 'If an active account uses that email, a verification code has been sent.'
+        if not error:
+            notice = 'If an active account uses that email, a verification code has been sent.'
         if is_ajax:
             from django.http import JsonResponse
             if error:

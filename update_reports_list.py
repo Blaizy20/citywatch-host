@@ -1,4 +1,6 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html_content = """{% extends 'analytics/admin_base.html' %}
 
 {% block content %}
 <div class="flex flex-col gap-5 w-full">
@@ -99,10 +101,10 @@ View Details</a>
 <div id="auto-animate-target" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-stagger relative">
 {% for report in reports %}
 <article id="report-card-{{ report.id }}" class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow item-node">
-<a href="{% url 'admin_report_detail' report.id %}" class="h-48 bg-surface-container-low flex items-center justify-center overflow-hidden relative group block">
-{% if report.photo %}<img alt="{{ report.title }}" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" src="{{ report.photo.url }}">{% else %}<span class="material-symbols-outlined text-6xl text-on-surface-variant opacity-20 group-hover:scale-110 transition-transform duration-500">image</span>{% endif %}
+<div class="h-48 bg-surface-container-low flex items-center justify-center overflow-hidden relative">
+{% if report.photo %}<img alt="{{ report.title }}" class="w-full h-full object-cover" src="{{ report.photo.url }}">{% else %}<span class="material-symbols-outlined text-6xl text-on-surface-variant opacity-20">image</span>{% endif %}
 {% if report.status == 'pending' %}<span class="absolute top-3 right-3 rounded-full bg-[#FEF08A] text-[#854D0E] px-2.5 py-1 text-xs font-bold">Pending</span>{% elif report.status == 'in_progress' %}<span class="absolute top-3 right-3 rounded-full bg-primary-container text-on-primary-container px-2.5 py-1 text-xs font-bold">In Progress</span>{% elif report.status == 'resolved' %}<span class="absolute top-3 right-3 rounded-full bg-secondary text-on-secondary px-2.5 py-1 text-xs font-bold">Resolved</span>{% else %}<span class="absolute top-3 right-3 rounded-full bg-gray-200 text-gray-800 px-2.5 py-1 text-xs font-bold">{{ report.get_status_display }}</span>{% endif %}
-</a>
+</div>
 <div class="p-4 flex flex-col gap-2 flex-1">
 <div class="flex justify-between items-start gap-2"><h3 class="text-lg font-bold text-primary">{{ report.title }}</h3><span class="rounded bg-primary-fixed px-2 py-0.5 text-xs font-semibold text-primary">{{ report.get_category_display }}</span></div>
 <p class="text-xs text-on-surface-variant">Rep: {{ report.resident.get_full_name|default:report.resident.username }}</p>
@@ -212,11 +214,6 @@ View Details</a>
                     }
                 }
                 
-                // Re-attach SPA routing to newly injected links
-                if (window.attachSPAListeners) {
-                    window.attachSPAListeners(contentContainer);
-                }
-                
                 window.history.replaceState({}, '', url);
             } catch (err) {
                 console.error("Local SPA filter error:", err);
@@ -277,3 +274,7 @@ View Details</a>
 })();
 </script>
 {% endblock %}
+"""
+
+with codecs.open('d:/citywatch/reports/templates/reports/admin_report_list.html', 'w', 'utf-8') as f:
+    f.write(html_content)

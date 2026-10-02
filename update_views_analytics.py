@@ -1,56 +1,9 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Count, F, ExpressionWrapper, DurationField
-from reports.models import Report
+import codecs
+import re
 
+content = codecs.open('d:/citywatch/analytics/views.py', 'r', 'utf-8').read()
 
-def admin_check(user):
-    return user.is_staff or user.is_superuser
-
-
-@login_required
-@user_passes_test(admin_check)
-def analytics_dashboard(request):
-    total_reports = Report.objects.count()
-    pending_count = Report.objects.filter(status='pending').count()
-    in_progress_count = Report.objects.filter(status='in_progress').count()
-    resolved_count = Report.objects.filter(status='resolved').count()
-
-    recent_reports = Report.objects.all().order_by('-date_submitted')[:5]
-
-    resolved_reports = Report.objects.filter(status='resolved').annotate(
-        resolution_time=ExpressionWrapper(
-            F('date_updated') - F('date_submitted'),
-            output_field=DurationField()
-        )
-    )
-
-    avg_resolution = None
-    if resolved_reports.exists():
-        total_seconds = sum([r.resolution_time.total_seconds() for r in resolved_reports])
-        avg_seconds = total_seconds / resolved_reports.count()
-        avg_resolution = round(avg_seconds / 86400, 1)
-
-    context = {
-        'total_reports': total_reports,
-        'pending_count': pending_count,
-        'in_progress_count': in_progress_count,
-        'resolved_count': resolved_count,
-        'recent_reports': recent_reports,
-        'avg_resolution_days': avg_resolution,
-    }
-
-    return render(request, 'analytics/dashboard.html', context)
-
-
-@login_required
-@user_passes_test(admin_check)
-def map_view(request):
-    reports = Report.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by('-date_submitted')
-    return render(request, 'analytics/map_view.html', {'reports': reports})
-
-
-@login_required
+new_view = '''@login_required
 @user_passes_test(admin_check)
 def reports_analytics(request):
     from django.utils import timezone
@@ -144,3 +97,9 @@ def reports_analytics(request):
     }
 
     return render(request, 'analytics/reports_analytics.html', context)
+'''
+
+pattern = re.compile(r'@login_required\s+@user_passes_test\(admin_check\)\s+def reports_analytics\(request\):.*?(?=\n\n\n|\Z)', re.DOTALL)
+new_content = pattern.sub(new_view.strip(), content)
+
+codecs.open('d:/citywatch/analytics/views.py', 'w', 'utf-8').write(new_content)

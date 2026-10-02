@@ -1,11 +1,13 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html_content = """{% extends 'analytics/admin_base.html' %}
 
 {% block content %}
 
 <!-- Back Navigation header for SPA -->
 <div class="flex items-center gap-4 mb-2">
-<a href="{% url 'admin_report_list' %}" data-no-spa="true" onclick="if(window.history.length > 1) { event.preventDefault(); this.querySelector('span').classList.add('-translate-x-4', 'opacity-0'); setTimeout(() => window.history.back(), 150); }" class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300 flex items-center justify-center text-on-surface-variant -ml-2 group" aria-label="Go back">
-<span class="material-symbols-outlined transition-all duration-300 group-hover:-translate-x-1 group-active:scale-75">arrow_back</span></a>
+<a href="{% url 'admin_report_list' %}" class="p-2 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center text-on-surface-variant -ml-2" aria-label="Go back">
+<span class="material-symbols-outlined">arrow_back</span></a>
 <h1 class="text-2xl font-bold font-display text-on-surface tracking-tight">Report Management</h1>
 </div>
 
@@ -65,81 +67,18 @@
 </div>
 
 {% if report.photo %}
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm md:col-span-2">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-xl font-semibold text-on-surface flex items-center gap-2">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<h3 class="text-xl font-semibold mb-4 text-on-surface flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">photo_library</span> Evidence</h3>
-<span class="text-xs text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-full font-semibold">Click image to enlarge</span>
-</div>
-<button type="button" class="w-full relative group overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="document.getElementById('image-lightbox').showModal()">
-<img src="{{ report.photo.url }}" class="w-full h-auto max-h-[500px] object-contain transition-transform duration-500 group-hover:scale-[1.01]">
-<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center pointer-events-none">
-<div class="w-14 h-14 rounded-full bg-black bg-opacity-50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 backdrop-blur-sm">
-<span class="material-symbols-outlined text-3xl">zoom_in</span>
-</div>
-</div>
-</button>
+<img src="{{ report.photo.url }}" class="w-full h-48 object-cover rounded-lg border border-outline-variant">
 </div>
 {% endif %}
 
 {% if report.latitude and report.longitude %}
-<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm md:col-span-2">
-<div class="flex justify-between items-center mb-4">
-  <h3 class="text-xl font-semibold text-on-surface flex items-center gap-2">
-    <span class="material-symbols-outlined text-primary">map</span> Location</h3>
-  <span class="text-xs text-on-surface-variant font-mono bg-surface-container px-2.5 py-1 rounded-full">Lat: {{ report.latitude|floatformat:4 }}, Lng: {{ report.longitude|floatformat:4 }}</span>
-</div>
-<div id="detailMap" class="w-full h-[350px] rounded-xl z-10 border border-outline-variant/50 shadow-inner"></div>
-<script>
-(function() {
-    if (window.detailMapInst) {
-        window.detailMapInst.remove();
-        window.detailMapInst = null;
-    }
-    
-    // Check if L exists (from admin_base.html)
-    if (typeof L === 'undefined') return;
-
-    const lat = {{ report.latitude|default:'null' }};
-    const lng = {{ report.longitude|default:'null' }};
-    
-    if (lat && lng) {
-        const map = L.map('detailMap', { zoomControl: false }).setView([lat, lng], 17);
-        window.detailMapInst = map;
-        
-        L.tileLayer('https://api.maptiler.com/maps/openstreetmap/256/{z}/{x}/{y}.jpg?key=85AhB7OaKR8pWqppnXdS', {
-            attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        }).addTo(map);
-        
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        let color = '#d97706';
-        {% if report.status == 'resolved' %}color = '#166534';{% endif %}
-        {% if report.status == 'in_progress' %}color = '#0ea5e9';{% endif %}
-        
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${color}" stroke="#ffffff" stroke-width="1.5"/></svg>`;
-        
-        const icon = L.divIcon({
-            className: 'custom-leaflet-marker',
-            html: svgIcon,
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        });
-
-        L.marker([lat, lng], { icon: icon }).addTo(map);
-    }
-})();
-</script>
-<style>
-.custom-leaflet-marker {
-    filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.2));
-    transition: transform 0.2s;
-}
-.custom-leaflet-marker:hover {
-    transform: scale(1.1) translateY(-4px) !important;
-}
-</style>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+<h3 class="text-xl font-semibold mb-4 text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">map</span> Location</h3>
+<p class="text-sm text-on-surface-variant">Lat: {{ report.latitude }}, Lng: {{ report.longitude }}</p>
 </div>
 {% endif %}
 </div>
@@ -223,51 +162,6 @@ Mark as Resolved <span class="material-symbols-outlined">check_circle</span>
 
 </aside>
 </div>
-
-<!-- Modals -->
-<dialog id="confirm-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-50">
-<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl p-6 w-[90vw] max-w-md mx-auto" style="animation: modalSlideIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;">
-<h3 class="text-xl font-bold font-display text-on-surface flex items-center gap-2 mb-3">
-<span class="material-symbols-outlined text-primary text-2xl">warning</span> Apply Changes?
-</h3>
-<p class="text-sm text-on-surface-variant mb-3 leading-relaxed">You are about to commit the following updates:</p>
-<ul id="confirm-changes-list" class="mb-6 space-y-2 text-sm text-on-surface font-semibold bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-    <!-- Injected by JS -->
-</ul>
-<p class="text-xs text-on-surface-variant mb-8 leading-relaxed italic bg-secondary-container bg-opacity-30 text-on-surface p-3 rounded-lg border border-secondary border-opacity-20 flex gap-2"><span class="material-symbols-outlined text-[16px] text-secondary">info</span><span>This action may instantly notify the resident and update department dashboards.</span></p>
-<div class="flex justify-end gap-3">
-<button type="button" class="px-4 py-2.5 rounded-xl font-bold text-on-surface hover:bg-surface-container transition-colors" onclick="document.getElementById('confirm-modal').close()">Cancel</button>
-<button type="button" id="confirm-apply-btn" class="px-5 py-2.5 rounded-xl font-bold bg-primary text-on-primary hover:bg-primary-container transition-colors shadow-sm flex items-center gap-2">Confirm Update</button>
-</div>
-</div>
-</dialog>
-
-{% if report.photo %}
-<dialog id="image-lightbox" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-90 backdrop:backdrop-blur-md m-auto fixed inset-0 z-[60] w-full h-full" onclick="if(event.target === this) this.close()">
-<div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 relative pointer-events-none">
-<button type="button" class="absolute top-6 right-6 w-12 h-12 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-80 transition-all backdrop-blur-sm border border-white border-opacity-20 z-10 pointer-events-auto" onclick="document.getElementById('image-lightbox').close()"><span class="material-symbols-outlined">close</span></button>
-<img src="{{ report.photo.url }}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto" style="animation: modalScaleUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;" onclick="event.stopPropagation()">
-</div>
-</dialog>
-{% endif %}
-
-<style>
-@keyframes modalSlideIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes modalScaleUp {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-dialog::backdrop {
-  animation: backdropFadeIn 0.3s ease forwards;
-}
-@keyframes backdropFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-</style>
 
 <!-- Ensure Idiomorph is loaded for morphing updates -->
 <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
@@ -362,35 +256,7 @@ dialog::backdrop {
     
     // Apply Changes Submission via fetch
     if (applyBtn) {
-        applyBtn.addEventListener('click', () => {
-            const list = document.getElementById('confirm-changes-list');
-            list.innerHTML = '';
-            
-            if (selectedStatus !== originalStatus) {
-                let statusLabel = selectedStatus;
-                if (statusLabel === 'pending') statusLabel = 'Pending';
-                else if (statusLabel === 'in_progress') statusLabel = 'In Progress';
-                else if (statusLabel === 'resolved') statusLabel = 'Resolved';
-                
-                list.innerHTML += `<li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-[18px]">update</span><span>Update status to <span class="text-primary">${statusLabel}</span></span></li>`;
-            }
-            
-            if (selectedDept !== originalDept) {
-                if (selectedDept) {
-                    const deptBtn = document.querySelector(`.dept-btn[data-dept="${selectedDept}"]`);
-                    const deptName = deptBtn ? deptBtn.lastElementChild.innerText.trim() : 'Department';
-                    list.innerHTML += `<li class="flex items-start gap-2"><span class="material-symbols-outlined text-primary text-[18px]">assignment_ind</span><span>Assign report to <span class="text-primary font-bold">${deptName}</span></span></li>`;
-                } else {
-                    list.innerHTML += `<li class="flex items-start gap-2"><span class="material-symbols-outlined text-secondary text-[18px]">person_remove</span><span>Remove department assignment</span></li>`;
-                }
-            }
-            
-            document.getElementById('confirm-modal').showModal();
-        });
-        
-        document.getElementById('confirm-apply-btn').addEventListener('click', async () => {
-            document.getElementById('confirm-modal').close();
-            
+        applyBtn.addEventListener('click', async () => {
             applyBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Saving...';
             applyBtn.classList.add('opacity-80', 'pointer-events-none');
             
@@ -409,16 +275,9 @@ dialog::backdrop {
                 if (selectedDept !== originalDept) {
                     const fd = new FormData();
                     fd.append('csrfmiddlewaretoken', csrfToken);
-                    if (selectedDept) fd.append('department', selectedDept);
+                    if (selectedDept) fd.append('department', selectedDept); // Might need logic if unassigning
                     await fetch("{% url 'assign_report' report.id %}", { method: 'POST', body: fd, headers: {'X-Requested-With': 'XMLHttpRequest'} });
                 }
-                
-                // Show "Saved" feedback
-                applyBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Saved!';
-                applyBtn.classList.remove('bg-primary');
-                applyBtn.classList.add('bg-secondary');
-                
-                await new Promise(r => setTimeout(r, 800));
                 
                 // Fetch the updated page seamlessly and morph
                 const res = await fetch(window.location.href, { headers: {'X-Requested-With': 'XMLHttpRequest'} });
@@ -461,12 +320,6 @@ dialog::backdrop {
                 const fd = new FormData(noteForm);
                 await fetch(noteForm.action, { method: 'POST', body: fd, headers: {'X-Requested-With': 'XMLHttpRequest'} });
                 
-                submitBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Posted!';
-                submitBtn.classList.remove('bg-primary');
-                submitBtn.classList.add('bg-secondary');
-                
-                await new Promise(r => setTimeout(r, 800));
-                
                 const res = await fetch(window.location.href, { headers: {'X-Requested-With': 'XMLHttpRequest'} });
                 const html = await res.text();
                 const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -501,3 +354,7 @@ dialog::backdrop {
 })();
 </script>
 {% endblock %}
+"""
+
+with codecs.open('d:/citywatch/reports/templates/reports/admin_report_detail.html', 'w', 'utf-8') as f:
+    f.write(html_content)

@@ -1,4 +1,6 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html = '''{% extends 'analytics/admin_base.html' %}
 {% load static %}
 {% block content %}
 
@@ -45,12 +47,7 @@
           <tr class="hover:bg-surface-container-low transition-colors group">
             <td class="p-4 text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{{ report.title }}</td>
             <td class="p-4 text-sm font-medium text-on-surface-variant"><span class="bg-surface-container px-2 py-1 rounded-md">{{ report.barangay }}</span></td>
-            <td class="p-4 text-sm text-on-surface-variant font-mono text-xs">
-  <button type="button" title="Pinpoint on map" class="inline-flex items-center gap-1.5 bg-surface-container hover:bg-primary-container hover:text-primary transition-colors px-2 py-1 rounded border border-outline-variant hover:border-primary group-hover:bg-primary-container group-hover:text-primary" onclick="event.stopPropagation(); focusMapOn({{ report.latitude|default_if_none:'null' }}, {{ report.longitude|default_if_none:'null' }}, {{ report.id }})">
-    <span class="material-symbols-outlined text-[16px]">my_location</span>
-    <span>{{ report.latitude|floatformat:4 }}, {{ report.longitude|floatformat:4 }}</span>
-  </button>
-</td>
+            <td class="p-4 text-sm text-on-surface-variant font-mono text-xs">{{ report.latitude|floatformat:4 }}, {{ report.longitude|floatformat:4 }}</td>
             <td class="p-4 text-sm font-semibold">
               <span class="inline-flex items-center gap-1.5 {% if report.status == 'resolved' %}text-[#166534]{% elif report.status == 'in_progress' %}text-[#0ea5e9]{% else %}text-[#d97706]{% endif %}">
                 <span class="w-1.5 h-1.5 rounded-full {% if report.status == 'resolved' %}bg-[#166534]{% elif report.status == 'in_progress' %}bg-[#0ea5e9]{% else %}bg-[#d97706]{% endif %}"></span>
@@ -106,9 +103,10 @@
     window.reportsMapInst = map;
 
     // Premium CartoDB Positron tiles for a sleek, modern admin look
-    L.tileLayer('https://api.maptiler.com/maps/openstreetmap/256/{z}/{x}/{y}.jpg?key=85AhB7OaKR8pWqppnXdS', {
-        attribution: '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
     }).addTo(map);
 
     // Add zoom control to bottom right
@@ -134,10 +132,8 @@
 
     // Plot pins
     const bounds = L.latLngBounds();
-    window.reportsMarkers = {}; // Store markers to open popups
     mapData.forEach(item => {
         const marker = L.marker([item.lat, item.lng], { icon: getIcon(item.statusKey) }).addTo(map);
-        window.reportsMarkers[item.id] = marker;
         bounds.extend([item.lat, item.lng]);
         
         // Beautiful popup
@@ -158,21 +154,6 @@
     if (mapData.length > 0) {
         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
     }
-    
-    // Global function to focus map
-    window.focusMapOn = function(lat, lng, id) {
-        if (!lat || !lng) return;
-        map.flyTo([lat, lng], 18, {
-            duration: 1.5,
-            easeLinearity: 0.25
-        });
-        if (window.reportsMarkers && window.reportsMarkers[id]) {
-            setTimeout(() => {
-                window.reportsMarkers[id].openPopup();
-            }, 1500); // Open popup after flyTo animation
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
 })();
 </script>
 
@@ -200,3 +181,7 @@
 </style>
 
 {% endblock %}
+'''
+
+with codecs.open('d:/citywatch/analytics/templates/analytics/map_view.html', 'w', 'utf-8') as f:
+    f.write(html)

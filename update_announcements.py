@@ -1,4 +1,6 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html_content = """{% extends 'analytics/admin_base.html' %}
 {% load static %}
 
 {% block content %}
@@ -175,7 +177,7 @@ Created {{ announcement.date_created|date:'M d, Y' }}
 </div>
 
 <!-- Preview Modal -->
-<dialog id="preview-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-[70]" onclick="if(event.target === this) this.close()">
+<dialog id="preview-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-[70] w-full h-full" onclick="if(event.target === this) this.close()">
 <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl w-[95vw] max-w-lg mx-auto flex flex-col relative overflow-hidden" style="animation: modalSlideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;">
 <div class="p-4 border-b border-outline-variant bg-surface-container flex justify-between items-center">
 <div class="flex items-center gap-2">
@@ -206,7 +208,7 @@ Acknowledge Notice
 </dialog>
 
 <!-- Delete Confirmation Modal -->
-<dialog id="delete-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-[60]" onclick="if(event.target === this) this.close()">
+<dialog id="delete-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-[60] w-full h-full">
 <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl p-6 w-[90vw] max-w-sm mx-auto text-center" style="animation: modalSlideIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;">
 <div class="w-16 h-16 rounded-full bg-error-container text-error flex items-center justify-center mx-auto mb-4">
 <span class="material-symbols-outlined text-3xl">delete_forever</span>
@@ -407,3 +409,7 @@ function openPreviewModal(title, content, type, imageUrl) {
 })();
 </script>
 {% endblock %}
+"""
+
+with codecs.open('d:/citywatch/reports/templates/reports/admin_announcement_list.html', 'w', 'utf-8') as f:
+    f.write(html_content)

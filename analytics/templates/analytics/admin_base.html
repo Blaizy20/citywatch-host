@@ -1,0 +1,763 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>{% block title %}CityWatch Admin{% endblock %}</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { 
+  theme: { 
+    extend: {
+      fontFamily: {
+        sans: ['"DM Sans"', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif']
+      },
+      colors: {
+        "primary": "#156b3e", "on-primary": "#ffffff", "primary-container": "#a0f3be",
+        "on-primary-container": "#002111", "secondary": "#004785", "on-secondary": "#ffffff", "secondary-container": "#d6e3ff",
+        "on-secondary-container": "#001b3f", "surface": "#fdfcff", "on-surface": "#1a1c1e",
+        "on-surface-variant": "#43474e", "surface-container": "#f3f4f9", "surface-container-low": "#f8f9fc",
+        "surface-container-lowest": "#ffffff", "outline": "#74777f", "outline-variant": "#c4c6cf",
+        "error": "#ba1a1a", "error-container": "#ffdad6", "on-error-container": "#93000a",
+        "background": "#f3f4f9", "on-background": "#1a1c1e",
+        "tertiary-fixed": "#ffdeaa", "on-tertiary-fixed-variant": "#5f4100"
+      },
+      borderRadius: { xl: '0.5rem', full: '0.75rem' }
+    }
+  }
+}
+</script>
+<script src="https://unpkg.com/idiomorph/dist/idiomorph.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module">
+  import autoAnimate from 'https://cdn.jsdelivr.net/npm/@formkit/auto-animate@0.10.0/index.min.js';
+  window.autoAnimate = autoAnimate;
+  window.dispatchEvent(new Event('autoAnimateLoaded'));
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  @keyframes staggerSlideUp {
+    0% { opacity: 0; transform: translateY(20px) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-stagger > * {
+    opacity: 0;
+    animation: staggerSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 50ms; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 100ms; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 150ms; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 200ms; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 250ms; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 300ms; }
+  #admin-main-content { 
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    view-transition-name: main;
+  }
+  
+  /* Disable full page transition to keep sidebar static */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  /* Apply View Transition ONLY to the main content area */
+  ::view-transition-old(main),
+  ::view-transition-new(main) {
+    animation-duration: 0.35s;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  ::view-transition-old(main) {
+    animation-name: custom-fade-out;
+  }
+  ::view-transition-new(main) {
+    animation-name: custom-fade-in;
+  }
+  @keyframes custom-fade-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes custom-fade-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(-12px) scale(0.99); }
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background text-on-background font-sans antialiased flex flex-col min-h-screen">
+<div class="flex min-h-screen w-full">
+
+<aside id="admin-sidebar" data-collapsed="false" class="hidden lg:flex bg-surface-container-lowest border-r border-outline-variant flex-col sticky top-0 h-screen z-50 flex-shrink-0 transition-all duration-300 w-64 data-[collapsed=true]:w-20 overflow-hidden group/sidebar">
+<div class="p-3 border-b border-outline-variant flex group-data-[collapsed=false]/sidebar:items-center group-data-[collapsed=false]/sidebar:justify-between group-data-[collapsed=true]/sidebar:flex-col group-data-[collapsed=true]/sidebar:items-center group-data-[collapsed=true]/sidebar:gap-4 min-h-[65px] transition-all duration-300">
+<a class="flex items-center gap-2 text-xl font-bold text-primary overflow-hidden" href="{% url 'landing' %}">
+<span class="material-symbols-outlined shrink-0 text-3xl">location_city</span>
+<span class="transition-opacity duration-200 whitespace-nowrap font-display group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Admin</span>
+</a>
+<button id="sidebar-toggle" class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center p-1 rounded-md hover:bg-surface-container-low shrink-0" title="Collapse/Expand">
+<span class="material-symbols-outlined text-[22px] group-data-[collapsed=true]/sidebar:rotate-180 transition-transform duration-300">menu_open</span>
+</button>
+</div>
+<nav class="flex-grow p-2 flex flex-col gap-1 relative" aria-label="Admin navigation">
+<div id="nav-active-pill" class="absolute top-0 left-2 right-2 rounded-lg bg-primary-container/70 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 hidden border border-white/40 shadow-sm"></div>
+{% url 'analytics_dashboard' as url_dash %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_dash }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">dashboard</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Dashboard</span></a>
+
+{% url 'admin_report_list' as url_reports %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_reports }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">description</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Reports</span></a>
+
+{% url 'admin_announcement_list' as url_announcements %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_announcements }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">campaign</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Announcements</span></a>
+
+{% url 'reports_analytics' as url_analytics %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_analytics }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">analytics</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Analytics</span></a>
+
+{% url 'map_view' as url_map %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_map }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">map</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Map View</span></a>
+
+{% url 'user_list' as url_users %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_users }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">group</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Users</span></a>
+
+{% url 'department_list' as url_depts %}
+<a class="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all text-sm font-semibold relative z-10" href="{{ url_depts }}">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">settings</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Settings</span></a>
+</nav>
+<div class="p-3 border-t border-outline-variant">
+<a href="#" onclick="event.preventDefault(); document.getElementById('logout-modal').showModal();" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-error hover:bg-error-container hover:text-on-error-container transition-all text-sm font-semibold">
+<span class="material-symbols-outlined shrink-0 group-hover:scale-110 transition-transform">logout</span><span class="transition-opacity duration-200 whitespace-nowrap group-data-[collapsed=true]/sidebar:opacity-0 group-data-[collapsed=true]/sidebar:hidden">Log Out</span></a>
+</div>
+</aside>
+
+<div class="flex-1 flex flex-col min-w-0">
+<header class="border-b border-outline-variant bg-surface-container-lowest sticky top-0 z-40 w-full" style="height: 56px; min-height: 56px;">
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-5 lg:px-8 flex items-center justify-between h-full">
+<div class="flex items-center lg:hidden mr-auto">
+  <a class="flex items-center gap-1 text-lg font-bold text-primary font-display" href="{% url 'landing' %}">
+    <span class="material-symbols-outlined text-[20px]">location_city</span>Admin
+  </a>
+</div>
+<div class="flex items-center gap-4 justify-end flex-grow ml-auto">
+<div class="relative" id="notification-dropdown-container">
+  <button id="notification-toggle" aria-label="Notifications" class="relative rounded-full p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors outline-none focus:ring-2 focus:ring-primary">
+    <span class="material-symbols-outlined">notifications</span>
+    <span id="unread-badge" class="absolute right-1 top-1 min-w-4 h-4 px-1 rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center {% if not unread_notifications_count %}hidden{% endif %}">{{ unread_notifications_count|default:"0" }}</span>
+  </button>
+  
+  <div id="notification-menu" class="impeccable-dropdown hidden absolute right-0 mt-2 w-80 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ease-out transform scale-95 opacity-0">
+    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+      <h3 class="font-semibold text-sm text-on-surface font-display">Notifications</h3>
+      <a href="#spa-notifications" onclick="document.getElementById('notification-menu').classList.add('hidden')" class="text-xs text-primary hover:underline font-medium">View All</a>
+    </div>
+    <div class="max-h-80 overflow-y-auto">
+      {% if recent_notifications %}
+        <div class="flex flex-col">
+        {% for notif in recent_notifications %}
+          <div class="relative group/notif border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors bg-surface-container-lowest p-4 flex flex-col gap-3" id="notif-{{ notif.id }}">
+            <div class="flex gap-3 relative">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 {% if not notif.is_read %}bg-primary text-on-primary{% else %}bg-primary-container/50 text-primary{% endif %} transition-transform group-hover/notif:scale-105" id="notif-icon-{{ notif.id }}">
+                <span class="material-symbols-outlined text-sm">
+                  {% if notif.notif_type == 'status_update' %}update
+                  {% elif notif.notif_type == 'assignment' %}assignment
+                  {% elif notif.notif_type == 'feedback_request' %}rate_review
+                  {% else %}campaign{% endif %}
+                </span>
+              </div>
+              <div class="flex-1 min-w-0 pr-2">
+                <p class="text-sm text-on-surface line-clamp-2 {% if not notif.is_read %}font-semibold{% endif %}" id="notif-text-{{ notif.id }}">{{ notif.message|safe }}</p>
+                <p class="text-[10px] text-on-surface-variant mt-1 {% if not notif.is_read %}text-primary font-medium{% endif %}" id="notif-time-{{ notif.id }}">{{ notif.date_created|timesince }} ago</p>
+              </div>
+              {% if not notif.is_read %}
+              <span class="absolute right-0 top-1 w-2 h-2 rounded-full bg-primary flex-shrink-0 transition-opacity" id="notif-dot-{{ notif.id }}"></span>
+              {% endif %}
+            </div>
+            <!-- Action Bar -->
+            <div class="flex items-center gap-2 ml-11">
+               <button onclick="toggleRead({{ notif.id }})" class="text-[10px] font-semibold px-2 py-1 rounded bg-primary-container text-on-primary-container hover:brightness-95 transition-all">Mark <span id="notif-read-btn-{{ notif.id }}">{% if notif.is_read %}Unread{% else %}Read{% endif %}</span></button>
+               {% if notif.report %}
+               <a href="#spa-report-detail-{{ notif.report.id }}" {% if not notif.is_read %}onclick="toggleRead({{ notif.id }})"{% endif %} class="text-[10px] font-semibold px-2 py-1 rounded bg-surface-container-high text-on-surface hover:brightness-95 transition-all">View</a>
+               {% endif %}
+               <button onclick="archiveNotif({{ notif.id }})" class="text-[10px] font-semibold px-2 py-1 rounded bg-error-container text-error hover:brightness-95 transition-all ml-auto">Archive</button>
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      {% else %}
+        <div class="p-8 flex flex-col items-center justify-center text-center text-on-surface-variant">
+          <span class="material-symbols-outlined text-4xl text-outline-variant mb-2 opacity-50">notifications_paused</span>
+          <p class="text-sm font-medium text-on-surface">You're all caught up</p>
+          <p class="text-xs mt-1 text-on-surface-variant/80">There are no new notifications.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    function setupDropdown(toggleId, menuId) {
+      const toggle = document.getElementById(toggleId);
+      const menu = document.getElementById(menuId);
+      if (!toggle || !menu) return;
+      
+      let isOpen = false;
+      
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isOpen) closeMenu();
+        else openMenu();
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (isOpen && !menu.contains(e.target) && !toggle.contains(e.target)) {
+          closeMenu();
+        }
+      });
+      
+      function openMenu() {
+        // Close any other open dropdowns
+        document.querySelectorAll('.impeccable-dropdown').forEach(m => {
+          if (!m.classList.contains('hidden') && m.id !== menuId) {
+            m.classList.remove('scale-100', 'opacity-100');
+            m.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { m.classList.add('hidden'); }, 200);
+            m.dataset.isOpen = 'false';
+            if (m.id === 'profile-menu') {
+              const arrow = document.getElementById('profile-arrow');
+              if (arrow) arrow.classList.remove('rotate-180');
+            }
+          }
+        });
+        
+        menu.classList.remove('hidden');
+        void menu.offsetWidth; // Force reflow
+        menu.classList.remove('scale-95', 'opacity-0');
+        menu.classList.add('scale-100', 'opacity-100');
+        isOpen = true;
+        menu.dataset.isOpen = 'true';
+        
+        if (toggleId === 'profile-toggle') {
+          const arrow = document.getElementById('profile-arrow');
+          if (arrow) arrow.classList.add('rotate-180');
+        }
+      }
+      
+      function closeMenu() {
+        menu.classList.remove('scale-100', 'opacity-100');
+        menu.classList.add('scale-95', 'opacity-0');
+        isOpen = false;
+        menu.dataset.isOpen = 'false';
+        setTimeout(() => {
+          if (menu.dataset.isOpen === 'false') menu.classList.add('hidden');
+        }, 200);
+        
+        if (toggleId === 'profile-toggle') {
+          const arrow = document.getElementById('profile-arrow');
+          if (arrow) arrow.classList.remove('rotate-180');
+        }
+      }
+    }
+
+    setupDropdown('notification-toggle', 'notification-menu');
+    setupDropdown('profile-toggle', 'profile-menu');
+    
+    // Notification AJAX Handlers
+    window.getCookie = function(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    window.updateUnreadCount = function(delta) {
+        const badge = document.getElementById('unread-badge');
+        const dot = document.getElementById('sidebar-unread-dot');
+        
+        if (badge) {
+            let currentCount = parseInt(badge.innerText) || 0;
+            currentCount += delta;
+            if (currentCount < 0) currentCount = 0;
+            
+            badge.innerText = currentCount;
+            if (currentCount > 0) {
+                badge.classList.remove('hidden');
+                if (dot) dot.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                if (dot) dot.classList.add('hidden');
+            }
+        }
+    };
+
+    window.toggleRead = function(id) {
+        fetch(`/notifications/${id}/toggle-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(res => res.json()).then(data => {
+            if(data.status === 'success') {
+                const icon = document.getElementById(`notif-icon-${id}`);
+                const text = document.getElementById(`notif-text-${id}`);
+                const time = document.getElementById(`notif-time-${id}`);
+                const dot = document.getElementById(`notif-dot-${id}`);
+                const btn = document.getElementById(`notif-read-btn-${id}`);
+                
+                if(data.is_read) {
+                    icon.classList.remove('bg-primary', 'text-on-primary');
+                    icon.classList.add('bg-primary-container/50', 'text-primary');
+                    text.classList.remove('font-semibold');
+                    time.classList.remove('text-primary', 'font-medium');
+                    if(dot) dot.classList.add('hidden');
+                    if(btn) btn.innerText = 'Unread';
+                    updateUnreadCount(-1);
+                } else {
+                    icon.classList.add('bg-primary', 'text-on-primary');
+                    icon.classList.remove('bg-primary-container/50', 'text-primary');
+                    text.classList.add('font-semibold');
+                    time.classList.add('text-primary', 'font-medium');
+                    if(dot) dot.classList.remove('hidden');
+                    if(btn) btn.innerText = 'Read';
+                    updateUnreadCount(1);
+                }
+            }
+        });
+    };
+
+    window.refreshNotifications = function() {
+        fetch('/reports/dashboard/')
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newDropdown = doc.querySelector('#notification-dropdown-container');
+                const currentDropdown = document.querySelector('#notification-dropdown-container');
+                if (newDropdown && currentDropdown) {
+                    // Update innerHTML
+                    currentDropdown.innerHTML = newDropdown.innerHTML;
+                    
+                    // Re-bind the toggle event listener since the DOM was replaced
+                    const toggle = document.getElementById('notification-toggle');
+                    const menu = document.getElementById('notification-menu');
+                    let isOpen = false;
+                    
+                    toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (isOpen) {
+                            menu.classList.remove('scale-100', 'opacity-100');
+                            menu.classList.add('scale-95', 'opacity-0');
+                            isOpen = false;
+                            setTimeout(() => { if (!isOpen) menu.classList.add('hidden'); }, 200);
+                        } else {
+                            document.querySelectorAll('.impeccable-dropdown').forEach(m => {
+                                if (!m.classList.contains('hidden') && m.id !== 'notification-menu') {
+                                    m.classList.remove('scale-100', 'opacity-100');
+                                    m.classList.add('scale-95', 'opacity-0');
+                                    setTimeout(() => { m.classList.add('hidden'); }, 200);
+                                }
+                            });
+                            menu.classList.remove('hidden');
+                            void menu.offsetWidth;
+                            menu.classList.remove('scale-95', 'opacity-0');
+                            menu.classList.add('scale-100', 'opacity-100');
+                            isOpen = true;
+                        }
+                    });
+                }
+            });
+    };
+
+    window.archiveNotif = function(id) {
+        const el = document.getElementById(`notif-${id}`);
+        const dot = document.getElementById(`notif-dot-${id}`);
+        const wasUnread = dot && !dot.classList.contains('hidden');
+
+        // Create inline overlay
+        const undoOverlay = document.createElement('div');
+        undoOverlay.id = `notif-undo-${id}`;
+        undoOverlay.className = 'absolute inset-0 bg-surface-container px-4 z-20 opacity-0 transition-opacity duration-300 flex flex-col justify-center';
+        undoOverlay.innerHTML = `
+            <div class="flex items-center justify-center gap-4 w-full relative z-10">
+                <div class="flex items-center gap-2 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[18px]">archive</span>
+                    <span class="text-sm font-medium">Notification archived</span>
+                </div>
+                <div class="w-px h-4 bg-outline-variant/50"></div>
+                <button onclick="undoArchive(${id}, ${wasUnread})" class="text-primary font-bold text-sm uppercase tracking-wide hover:brightness-110 focus:outline-none">Undo</button>
+            </div>
+            <div id="notif-progress-${id}" class="absolute bottom-0 left-0 h-1 bg-primary" style="width: 100%; transition: width 5s linear;"></div>
+        `;
+        el.appendChild(undoOverlay);
+        
+        // Force DOM reflow so transitions trigger
+        undoOverlay.offsetHeight;
+        
+        // Trigger fade in and progress bar countdown
+        requestAnimationFrame(() => {
+            undoOverlay.classList.remove('opacity-0');
+            undoOverlay.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                const bar = document.getElementById(`notif-progress-${id}`);
+                if (bar) bar.style.width = '0%';
+            }, 50);
+        });
+        
+        if (wasUnread) updateUnreadCount(-1);
+
+        // Set deletion timer
+        const timer = setTimeout(() => {
+            fetch(`/notifications/${id}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(() => {
+                if (el) {
+                    el.style.height = el.offsetHeight + 'px';
+                    el.style.overflow = 'hidden';
+                    el.offsetHeight; // force reflow
+                    el.style.transition = 'all 0.3s ease-out';
+                    el.style.height = '0px';
+                    el.style.padding = '0px';
+                    el.style.opacity = '0';
+                    el.style.border = 'none';
+                    setTimeout(() => el.remove(), 300);
+                }
+            });
+        }, 5000);
+        
+        window.archiveTimers = window.archiveTimers || {};
+        window.archiveTimers[id] = timer;
+    };
+
+    window.undoArchive = function(id, wasUnread) {
+        const timer = window.archiveTimers[id];
+        if (timer) {
+            clearTimeout(timer);
+            delete window.archiveTimers[id];
+        }
+        
+        const undoOverlay = document.getElementById(`notif-undo-${id}`);
+        if (undoOverlay) {
+            undoOverlay.classList.remove('opacity-100');
+            undoOverlay.classList.add('opacity-0');
+            setTimeout(() => undoOverlay.remove(), 300);
+        }
+        
+        if (wasUnread) updateUnreadCount(1);
+    };
+  });
+</script>
+
+<div class="relative" id="profile-dropdown-container">
+  <button id="profile-toggle" class="flex items-center gap-2 text-sm font-semibold text-on-surface rounded-full hover:bg-surface-container-low p-1 pr-3 transition-colors outline-none focus:ring-2 focus:ring-primary">
+    {% if request.user.profile.profile_picture %}
+    <img class="resident-profile-image user-avatar" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">
+    <span class="material-symbols-outlined text-3xl text-on-surface-variant user-avatar-placeholder hidden">account_circle</span>
+    {% else %}
+    <img class="resident-profile-image user-avatar hidden" src="" alt="Profile picture">
+    <span class="material-symbols-outlined text-3xl text-on-surface-variant user-avatar-placeholder">account_circle</span>
+    {% endif %}
+    <span class="resident-header-username">{{ request.user.username }}</span>
+    <span id="profile-arrow" class="material-symbols-outlined text-base text-on-surface-variant transition-transform duration-300">expand_more</span>
+  </button>
+
+  <div id="profile-menu" class="impeccable-dropdown hidden absolute right-0 mt-2 w-72 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-2xl z-50 overflow-hidden origin-top-right transition-all duration-200 ease-out transform scale-95 opacity-0">
+    <div class="p-5 border-b border-outline-variant bg-surface-container-low flex flex-col items-center justify-center text-center">
+      {% if request.user.profile.profile_picture %}
+      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5 user-avatar" src="{{ request.user.profile.profile_picture.url }}" alt="">
+      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3 user-avatar-placeholder hidden">
+        <span class="material-symbols-outlined text-[36px]">account_circle</span>
+      </div>
+      {% else %}
+      <img class="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20 p-0.5 user-avatar hidden" src="" alt="">
+      <div class="w-16 h-16 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-3 user-avatar-placeholder">
+        <span class="material-symbols-outlined text-[36px]">account_circle</span>
+      </div>
+      {% endif %}
+      <h3 class="font-bold text-lg text-on-surface font-display leading-tight">{{ request.user.first_name|default:request.user.username }} {{ request.user.last_name }}</h3>
+      <p class="text-xs text-on-surface-variant mt-1">{{ request.user.email|default:'Resident Account' }}</p>
+    </div>
+    <div class="p-2 flex flex-col gap-1">
+      <a href="#" onclick="document.getElementById('profile-menu').classList.add('hidden')" class="spa-link flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low text-on-surface transition-colors font-medium text-sm group">
+        <span class="material-symbols-outlined text-[20px] text-on-surface-variant group-hover:rotate-45 transition-transform duration-300">settings</span> Account Settings
+      </a>
+</div>
+</div>
+</div>
+</header>
+<main id="admin-main-content" class="w-full max-w-7xl px-4 sm:px-5 lg:px-8 py-5 lg:py-7 flex flex-col gap-7 relative self-center">
+<div class="animate-stagger w-full flex flex-col gap-7">
+{% block content %}{% endblock %}
+</div>
+</main>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebarLinks = document.querySelectorAll('nav[aria-label="Admin navigation"] a');
+
+    const activePill = document.getElementById('nav-active-pill');
+    
+    function updateActiveLink(urlPath) {
+        let activeFound = false;
+        sidebarLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (
+                (urlPath.includes(href) && href !== '/') || 
+                (href === '/' && urlPath === '/') ||
+                (href === '/reports/admin/list/' && urlPath.startsWith('/reports/admin/'))
+            ) {
+                activeFound = true;
+                if (activePill) {
+                    activePill.classList.remove('hidden');
+                    activePill.style.transform = `translateY(${link.offsetTop}px)`;
+                    activePill.style.height = `${link.offsetHeight}px`;
+                }
+                link.classList.add('text-on-primary-container');
+                link.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-low');
+            } else {
+                link.classList.remove('text-on-primary-container');
+                link.classList.add('text-on-surface-variant', 'hover:bg-surface-container-low');
+            }
+        });
+        if (!activeFound && activePill) activePill.classList.add('hidden');
+        
+        // Mobile links
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if ((urlPath.includes(href) && href !== '/') || (href === '/' && urlPath === '/')) {
+                link.classList.add('text-primary');
+                link.classList.remove('text-on-surface-variant');
+                link.querySelector('div').classList.add('bg-primary-container', 'text-on-primary-container');
+            } else {
+                link.classList.remove('text-primary');
+                link.classList.add('text-on-surface-variant');
+                link.querySelector('div').classList.remove('bg-primary-container', 'text-on-primary-container');
+            }
+        });
+    }
+
+    // Sidebar toggle logic
+    const sidebar = document.getElementById('admin-sidebar');
+    const toggle = document.getElementById('sidebar-toggle');
+    if(localStorage.getItem('adminSidebarCollapsed') === 'true' && sidebar) sidebar.setAttribute('data-collapsed', 'true');
+    if(toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+            const state = sidebar.getAttribute('data-collapsed') === 'true' ? 'false' : 'true';
+            sidebar.setAttribute('data-collapsed', state);
+            localStorage.setItem('adminSidebarCollapsed', state);
+            setTimeout(() => updateActiveLink(window.location.pathname), 300);
+        });
+    }
+    
+    window.addEventListener('resize', () => updateActiveLink(window.location.pathname));
+
+    async function loadPage(url) {
+        const mainContent = document.getElementById('admin-main-content');
+        if (!mainContent) return;
+        
+        mainContent.classList.add('pointer-events-none');
+        
+        try {
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const html = await res.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newMain = doc.getElementById('admin-main-content');
+            
+            if (newMain) {
+                const updateDOM = () => {
+                    if (window.Idiomorph) {
+                        Idiomorph.morph(mainContent, newMain.innerHTML, { morphStyle: 'innerHTML' });
+                    } else {
+                        mainContent.innerHTML = newMain.innerHTML;
+                    }
+                    document.title = doc.title;
+                    
+                    // Re-evaluate scripts loaded via SPA
+                    const scripts = mainContent.querySelectorAll('script');
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                    
+                    attachSPAListeners(mainContent);
+                    updateActiveLink(window.location.pathname);
+                    
+                    // Dispatch event so auto-animate initializes on new content
+                    document.dispatchEvent(new Event('autoAnimateLoaded'));
+                };
+                
+                if (document.startViewTransition) {
+                    document.startViewTransition(() => {
+                        updateDOM();
+                    });
+                } else {
+                    updateDOM();
+                }
+            } else {
+                window.location.href = url;
+            }
+        } catch (e) {
+            console.error('SPA load failed:', e);
+            window.location.href = url;
+        } finally {
+            mainContent.classList.remove('pointer-events-none');
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        document.querySelectorAll('.chart-card').forEach(card => {
+            const btn = card.querySelector('.btn-fullscreen span');
+            if (btn) {
+                btn.innerText = document.fullscreenElement === card ? 'fullscreen_exit' : 'fullscreen';
+            }
+        });
+        // Force Chart.js to recalculate dimensions immediately and after animation finishes
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+        setTimeout(() => window.dispatchEvent(new Event('resize')), 350);
+    });
+
+    window.attachSPAListeners = function attachSPAListeners(container) {
+        const links = container.querySelectorAll('a[href^="/"], a[href^="?"]');
+        links.forEach(link => {
+            if (link.getAttribute('href').includes('logout') || link.hasAttribute('data-no-spa')) return;
+            if (link.hasAttribute('data-spa-attached')) return;
+            link.setAttribute('data-spa-attached', 'true');
+            
+            link.addEventListener('click', (e) => {
+                // Ignore if it's a new tab click
+                if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+                e.preventDefault();
+                let urlStr = link.getAttribute('href');
+                let url;
+                if (urlStr.startsWith('?')) {
+                    url = new URL(window.location.pathname + urlStr, window.location.origin);
+                } else {
+                    url = new URL(urlStr, window.location.origin);
+                }
+                window.history.pushState({}, '', url.toString());
+                loadPage(url.toString());
+            });
+        });
+        
+        const forms = container.querySelectorAll('form[method="GET"]');
+        forms.forEach(form => {
+            if (form.hasAttribute('data-no-spa')) return;
+            if (form.hasAttribute('data-spa-attached')) return;
+            form.setAttribute('data-spa-attached', 'true');
+            
+            const selects = form.querySelectorAll('select');
+            selects.forEach(select => {
+                select.addEventListener('change', () => {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                });
+            });
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const url = new URL(form.action || window.location.href, window.location.origin);
+                url.search = ''; // Clear old params
+                const formData = new FormData(form);
+                for (const pair of formData) {
+                    if (pair[1]) url.searchParams.set(pair[0], pair[1]);
+                }
+                window.history.pushState({}, '', url.toString());
+                loadPage(url.toString());
+            });
+        });
+    }
+
+    window.addEventListener('popstate', () => {
+        loadPage(window.location.href);
+    });
+
+    attachSPAListeners(document);
+    updateActiveLink(window.location.pathname);
+});
+</script>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center h-[64px] z-50 px-2 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+  <a href="{% url 'analytics_dashboard' %}" class="flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant mobile-nav-link">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">dashboard</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Home</span>
+  </a>
+  <a href="{% url 'admin_report_list' %}" class="flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant mobile-nav-link">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">description</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Reports</span>
+  </a>
+  <a href="{% url 'reports_analytics' %}" class="flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant mobile-nav-link">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">analytics</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Stats</span>
+  </a>
+  <a href="{% url 'map_view' %}" class="flex flex-col items-center justify-center w-16 h-full gap-1 text-on-surface-variant mobile-nav-link">
+    <div class="px-4 py-1 rounded-full flex items-center justify-center transition-colors">
+      <span class="material-symbols-outlined text-[24px]">map</span>
+    </div>
+    <span class="text-[10px] font-medium leading-none">Map</span>
+  </a>
+</nav>
+
+
+<!-- Logout Confirmation Modal -->
+<dialog id="logout-modal" class="bg-transparent p-0 backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm m-auto fixed inset-0 z-[100]" onclick="if(event.target === this) this.close()">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl p-6 w-[90vw] max-w-sm mx-auto" style="animation: modalScaleUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;">
+    <div class="flex flex-col items-center text-center">
+      <div class="w-16 h-16 rounded-full bg-[#fee2e2] text-[#991b1b] flex items-center justify-center mb-4 shadow-inner">
+        <span class="material-symbols-outlined text-3xl">logout</span>
+      </div>
+      <h3 class="text-xl font-bold font-display text-on-surface mb-2">Ready to Leave?</h3>
+      <p class="text-sm text-on-surface-variant mb-6 leading-relaxed">
+        You are about to securely log out of your administrative session. You will need to re-enter your credentials to access the dashboard again.
+      </p>
+    </div>
+    <div class="flex flex-col gap-3">
+      <a href="{% url 'logout' %}" data-no-spa="true" class="w-full py-3 rounded-xl font-bold bg-[#dc2626] hover:bg-[#b91c1c] text-white transition-colors shadow-sm flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">logout</span> Confirm Log Out
+      </a>
+      <button type="button" class="w-full py-3 rounded-xl font-bold text-on-surface-variant hover:bg-surface-container transition-colors" onclick="document.getElementById('logout-modal').close()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</dialog>
+<style>
+@keyframes modalScaleUp {
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+</body>
+</html>

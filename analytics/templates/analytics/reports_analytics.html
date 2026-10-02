@@ -1,152 +1,406 @@
+{% extends 'analytics/admin_base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Analytics - CityWatch Admin</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{% block extra_head %}
+
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8 w-full">
+
+<!-- Header Area -->
+<div class="mb-8 flex flex-wrap items-end justify-between gap-3">
+<div>
+<h1 class="text-3xl font-bold font-display text-on-surface tracking-tight flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[32px]">monitoring</span>
+Analytics Hub
+</h1>
+<p class="mt-1 max-w-2xl text-sm text-on-surface-variant font-medium">Deep-dive into comprehensive statistics and reporting trends.</p>
+</div>
+<div class="flex items-center gap-4">
+  <form method="GET" class="flex items-center gap-2" id="timeframe-form">
+    <label for="timeframe" class="text-sm font-bold text-on-surface-variant">Timeframe:</label>
+    <select name="timeframe" id="timeframe" class="text-sm font-semibold text-primary bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-8 py-1.5 focus:ring-primary focus:border-primary cursor-pointer" onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+      <option value="7" {% if timeframe == '7' %}selected{% endif %}>Last 7 Days</option>
+      <option value="30" {% if timeframe == '30' %}selected{% endif %}>Last 30 Days</option>
+      <option value="90" {% if timeframe == '90' %}selected{% endif %}>Last 90 Days</option>
+      <option value="all" {% if timeframe == 'all' %}selected{% endif %}>All Time</option>
+      <option value="custom" {% if timeframe == 'custom' %}selected{% endif %}>Custom Date</option>
+    </select>
+    
+    {% if timeframe == 'custom' %}
+      <div class="flex items-center gap-2 ml-2">
+        <input type="date" name="custom_start" value="{{ custom_start }}" class="text-sm font-semibold text-primary bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 focus:ring-primary focus:border-primary cursor-pointer" onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+        <span class="text-sm font-bold text-on-surface-variant">to</span>
+        <input type="date" name="custom_end" value="{{ custom_end }}" class="text-sm font-semibold text-primary bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 focus:ring-primary focus:border-primary cursor-pointer" onchange="this.form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))">
+      </div>
+    {% endif %}
+  </form>
+  <a href="{% url 'analytics_dashboard' %}" data-no-spa="true" onclick="if(window.history.length > 1) { event.preventDefault(); this.querySelector('span').classList.add('-translate-x-4', 'opacity-0'); setTimeout(() => window.history.back(), 150); }" class="inline-flex items-center gap-1.5 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors group p-2 hover:bg-surface-container-low rounded-full -mr-2"><span class="material-symbols-outlined text-[20px] transition-all duration-300 group-hover:-translate-x-1 group-active:scale-75">arrow_back</span> Dashboard</a>
+</div>
+
+<!-- Dashboard Master Grid Top Row -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-stretch">
+  
+  <!-- Hero Card: Total Reports -->
+  <div class="lg:col-span-4 flex flex-col h-full">
+    <!-- Hero Card: Total Reports -->
+    <div class="bg-primary text-on-primary rounded-[2rem] p-8 sm:p-10 shadow-lg hover:shadow-xl transition-all flex flex-col justify-center relative overflow-hidden group h-full min-h-[300px]">
+    <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-white opacity-5 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+    <div class="absolute -right-10 -top-10 w-48 h-48 bg-black opacity-10 rounded-full group-hover:scale-110 transition-transform duration-700 delay-75"></div>
+    
+    <div class="relative z-10 flex flex-col h-full justify-between">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-[48px] opacity-90">assignment</span>
+        <span class="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border border-white/20">System Volume</span>
+      </div>
+      
+      <div class="mt-8">
+        <p class="text-lg font-semibold text-primary-container mb-1">Total Reports Filed</p>
+        <div class="flex items-baseline gap-3">
+          <h3 class="text-[5rem] sm:text-[7rem] leading-none font-display font-bold counter" data-target="{{ total_reports }}">0</h3>
+        </div>
+        <p class="text-sm text-primary-container mt-4 max-w-sm leading-relaxed">Overall submission volume aggregated across all barangays and local agencies.</p>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Small Stats Stack -->
+  <div class="lg:col-span-3 flex flex-col gap-6 justify-between h-full">
+    <!-- Resolution Time -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 relative overflow-hidden group flex-1">
+    <div class="absolute right-0 top-0 w-full h-full bg-gradient-to-l from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <span class="material-symbols-outlined text-secondary bg-secondary-container p-3 rounded-xl text-[24px] shrink-0">timer</span>
+    <div class="flex flex-col relative z-10 w-full">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Resolution Time</p>
+      <div class="flex items-baseline gap-1">
+        <h3 class="text-3xl font-display font-bold text-on-surface">{% if avg_resolution_days %}{{ avg_resolution_days }}{% else %}0{% endif %}</h3>
+        <span class="text-xs font-semibold text-on-surface-variant">days avg</span>
+      </div>
+      {% if avg_res_detailed %}
+        <p class="text-[10px] font-semibold text-secondary bg-secondary/10 px-2 py-0.5 rounded max-w-max mt-1 whitespace-nowrap">{{ avg_res_detailed }} exact average</p>
+      {% endif %}
+    </div>
+  </div>
+    
+    <!-- Pending Action -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 relative overflow-hidden group flex-1">
+    <div class="absolute right-0 top-0 w-full h-full bg-gradient-to-l from-[#d97706]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <span class="material-symbols-outlined text-[#d97706] bg-[#fef3c7] p-3 rounded-xl text-[24px] shrink-0">pending_actions</span>
+    <div class="flex flex-col relative z-10">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Pending Action</p>
+      <div class="flex items-baseline gap-2">
+        {% for item in status_data %}
+          {% if item.label == 'pending' %}
+            <h3 class="text-3xl font-display font-bold text-on-surface counter" data-target="{{ item.count }}">0</h3>
+            <span class="text-[10px] font-bold text-[#d97706] bg-[#fef3c7] px-1.5 py-0.5 rounded uppercase">Review</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+    
+    <!-- Top Category -->
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 relative overflow-hidden group flex-1">
+    <div class="absolute right-0 top-0 w-full h-full bg-gradient-to-l from-[#166534]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <span class="material-symbols-outlined text-[#166534] bg-[#dcfce7] p-3 rounded-xl text-[24px] shrink-0">category</span>
+    <div class="flex flex-col relative z-10 w-full overflow-hidden">
+      <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Top Category</p>
+      {% if category_data %}
+      <h3 class="text-xl font-display font-bold text-on-surface capitalize truncate">{{ category_data.0.label }}</h3>
+      {% else %}
+      <h3 class="text-xl font-display font-bold text-on-surface">None</h3>
+      {% endif %}
+    </div>
+  </div>
+  </div>
+
+  <!-- Trend Line Chart -->
+  <div class="lg:col-span-5 flex flex-col h-full">
+    <!-- Trend Line Chart -->
+    <div class="chart-card bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-6 h-full flex flex-col transition-all duration-300 overflow-hidden">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h3 class="font-bold text-lg text-on-surface">Submission Trend</h3>
+      <p class="text-xs font-medium text-on-surface-variant">Volume of incoming reports over time</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="const card = this.closest('.chart-card'); if (!document.fullscreenElement) { card.requestFullscreen().catch(e => console.error(e)); } else { document.exitFullscreen(); }" class="btn-fullscreen text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container-low flex items-center justify-center" title="Toggle Fullscreen">
+        <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+      </button>
+      <span class="material-symbols-outlined text-on-surface-variant">trending_up</span>
+    </div>
+  </div>
+  <div class="relative w-full flex-1 min-h-[250px] sm:min-h-[300px]">
+    <canvas id="trendChart" class="absolute inset-0 w-full h-full"></canvas>
+  </div>
+</div>
+  </div>
+
+</div>
+
+<!-- Dashboard Master Grid Bottom Row -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-stretch">
+  <div class="lg:col-span-3 flex flex-col h-full">
+    <!-- Status Chart -->
+    <div class="chart-card bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-6 flex flex-col transition-all duration-300 overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg text-on-surface">Reports by Status</h3>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="const card = this.closest('.chart-card'); if (!document.fullscreenElement) { card.requestFullscreen().catch(e => console.error(e)); } else { document.exitFullscreen(); }" class="btn-fullscreen text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container-low flex items-center justify-center" title="Toggle Fullscreen">
+          <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+        </button>
+        <span class="material-symbols-outlined text-on-surface-variant">donut_large</span>
+      </div>
+    </div>
+    <div class="relative w-full flex-1 min-h-[250px]">
+      <canvas id="statusChart" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+  </div>
+  </div>
+  
+  <div class="lg:col-span-3 flex flex-col h-full">
+    <!-- Category Chart -->
+    <div class="chart-card bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-6 flex flex-col transition-all duration-300 overflow-hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-lg text-on-surface">Reports by Category</h3>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="const card = this.closest('.chart-card'); if (!document.fullscreenElement) { card.requestFullscreen().catch(e => console.error(e)); } else { document.exitFullscreen(); }" class="btn-fullscreen text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container-low flex items-center justify-center" title="Toggle Fullscreen">
+          <span class="material-symbols-outlined text-[20px]">fullscreen</span>
+        </button>
+        <span class="material-symbols-outlined text-on-surface-variant">pie_chart</span>
+      </div>
+    </div>
+    <div class="relative w-full flex-1 min-h-[250px]">
+      <canvas id="categoryChart" class="absolute inset-0 w-full h-full"></canvas>
+    </div>
+  </div>
+  </div>
+  
+  <div class="lg:col-span-6 flex flex-col h-full">
+    <!-- Barangay Breakdown -->
+    <div class="chart-card bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-6 h-full flex flex-col transition-all duration-300 overflow-hidden">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h3 class="font-bold text-lg text-on-surface">Barangay Heatmap</h3>
+      <p class="text-xs font-medium text-on-surface-variant">Distribution of incident reports across local regions</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button type="button" onclick="const card = this.closest('.chart-card'); if (!document.fullscreenElement) { card.requestFullscreen().catch(e => console.error(e)); } else { document.exitFullscreen(); }" class="btn-fullscreen text-on-surface-variant hover:text-primary transition-colors p-2 rounded-xl hover:bg-surface-container-low flex items-center justify-center" title="Toggle Fullscreen">
+        <span class="material-symbols-outlined text-[24px]">fullscreen</span>
+      </button>
+      <span class="material-symbols-outlined text-primary bg-primary-container p-2 rounded-xl">map</span>
+    </div>
+  </div>
+  <div class="relative w-full flex-1 min-h-[350px]">
+    <canvas id="barangayChart" class="absolute inset-0 w-full h-full"></canvas>
+  </div>
+</div>
+  </div>
+</div>
+</div>
+
 <script>
-  tailwind.config = { theme: { extend: {
-    "colors": {
-      "primary": "#002045", "on-primary": "#ffffff", "primary-container": "#1a365d",
-      "on-primary-container": "#86a0cd", "secondary": "#0a6c44", "secondary-container": "#9ff5c1",
-      "on-secondary-container": "#167249", "surface": "#f7fafc", "on-surface": "#181c1e",
-      "on-surface-variant": "#43474e", "surface-container": "#ebeef0", "surface-container-low": "#f1f4f6",
-      "surface-container-lowest": "#ffffff", "outline": "#74777f", "outline-variant": "#c4c6cf"
-    },
-    "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }
-  }}}
+(function() {
+    // Number Counter Animation
+    const counters = document.querySelectorAll('.counter');
+    const speed = 20; 
+    counters.forEach(counter => {
+        const updateCount = () => {
+            const target = +counter.getAttribute('data-target');
+            const count = +counter.innerText;
+            const inc = Math.max(1, Math.ceil(target / speed));
+            if (count < target) {
+                counter.innerText = count + inc;
+                setTimeout(updateCount, 40);
+            } else {
+                counter.innerText = target;
+            }
+        };
+        updateCount();
+    });
+
+    // Chart.js Configuration
+    const trendLabels = [{% for item in trend_data %}'{{ item.date }}',{% endfor %}];
+    const trendData = [{% for item in trend_data %}{{ item.count }},{% endfor %}];
+
+    const statusLabels = [{% for item in status_data %}'{{ item.label|title }}',{% endfor %}];
+    const statusData = [{% for item in status_data %}{{ item.count }},{% endfor %}];
+    
+    const categoryLabels = [{% for item in category_data %}'{{ item.label|title }}',{% endfor %}];
+    const categoryData = [{% for item in category_data %}{{ item.count }},{% endfor %}];
+    
+    const barangayLabels = [{% for item in barangay_data %}'{{ item.label }}',{% endfor %}];
+    const barangayData = [{% for item in barangay_data %}{{ item.count }},{% endfor %}];
+
+    // Destroy existing charts to prevent SPA memory leaks / overlap
+    if (window.trendChartInst) window.trendChartInst.destroy();
+    if (window.statusChartInst) window.statusChartInst.destroy();
+    if (window.categoryChartInst) window.categoryChartInst.destroy();
+    if (window.barangayChartInst) window.barangayChartInst.destroy();
+
+    // Helper to completely recreate the canvas. 
+    // Idiomorph morphs DOM and can clash with Chart.js canvas mutations, causing freezes.
+    function getFreshContext(id) {
+        const oldCanvas = document.getElementById(id);
+        if (!oldCanvas) return null;
+        const newCanvas = document.createElement('canvas');
+        newCanvas.id = id;
+        newCanvas.className = 'absolute inset-0 w-full h-full';
+        oldCanvas.parentNode.replaceChild(newCanvas, oldCanvas);
+        return newCanvas.getContext('2d');
+    }
+
+    Chart.defaults.font.family = "'DM Sans', sans-serif";
+    Chart.defaults.color = '#43474e';
+
+    // 0. Trend Line Chart
+    const ctxTrend = getFreshContext('trendChart');
+    let trendGradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+    trendGradient.addColorStop(0, 'rgba(21, 107, 62, 0.25)'); // primary
+    trendGradient.addColorStop(1, 'rgba(21, 107, 62, 0.0)');
+
+    window.trendChartInst = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: 'Reports Submitted',
+                data: trendData,
+                borderColor: '#156b3e',
+                backgroundColor: trendGradient,
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#156b3e',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f9', drawBorder: false },
+                    ticks: { precision: 0 }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+
+    // 1. Status Donut Chart
+    const ctxStatus = getFreshContext('statusChart');
+    window.statusChartInst = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: ['#d97706', '#0ea5e9', '#166534'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            }
+        }
+    });
+
+    // 2. Category Pie Chart
+    const ctxCategory = getFreshContext('categoryChart');
+    const categoryColors = [
+        '#156b3e', '#004785', '#6366f1', '#eab308', '#ec4899', '#8b5cf6', '#14b8a6'
+    ];
+    window.categoryChartInst = new Chart(ctxCategory, {
+        type: 'polarArea',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryData,
+                backgroundColor: categoryColors.map(c => c + 'cc'),
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } }
+            },
+            scales: {
+                r: { display: false }
+            }
+        }
+    });
+
+    // 3. Barangay Bar Chart
+    const ctxBarangay = getFreshContext('barangayChart');
+    
+    // Create gradient
+    let gradient = ctxBarangay.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, '#156b3e');   
+    gradient.addColorStop(1, '#a0f3be');
+
+    window.barangayChartInst = new Chart(ctxBarangay, {
+        type: 'bar',
+        data: {
+            labels: barangayLabels,
+            datasets: [{
+                label: 'Reports',
+                data: barangayData,
+                backgroundColor: gradient,
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f9', drawBorder: false },
+                    ticks: { precision: 0 }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false }
+                }
+            },
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+})();
 </script>
-<style>.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }</style>
-</head>
-<body class="bg-surface text-on-surface font-sans flex min-h-screen">
-
-<aside class="hidden md:flex flex-col h-screen sticky top-0 left-0 p-4 bg-surface-container-low w-64 border-r border-outline-variant">
-<a class="mb-8 flex items-center gap-3" href="{% url 'home' %}">
-<span class="material-symbols-outlined text-primary text-[40px]">location_city</span>
-<div class="flex flex-col">
-<h1 class="text-xl font-bold text-primary">Admin Portal</h1>
-<p class="text-xs text-on-surface-variant">Baliwag City</p>
-</div>
-</a>
-<nav class="flex-1 flex flex-col gap-2">
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'analytics_dashboard' %}">
-<span class="material-symbols-outlined">dashboard</span> Dashboard</a>
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'admin_report_list' %}">
-<span class="material-symbols-outlined">description</span> Reports</a>
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'admin_announcement_list' %}">
-<span class="material-symbols-outlined">campaign</span> News &amp; Announcements</a>
-<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold text-sm" href="{% url 'reports_analytics' %}">
-<span class="material-symbols-outlined">analytics</span> Analytics</a>
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'map_view' %}">
-<span class="material-symbols-outlined">map</span> Map View</a>
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'user_list' %}">
-<span class="material-symbols-outlined">group</span> Users</a>
-<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg text-sm font-semibold" href="{% url 'department_list' %}">
-<span class="material-symbols-outlined">settings</span> Settings</a>
-</nav>
-<a href="{% url 'logout' %}" class="mt-auto flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-primary text-on-primary hover:opacity-90 text-sm font-bold">
-<span class="material-symbols-outlined">logout</span> Log Out</a>
-</aside>
-
-<main class="flex-1 flex flex-col">
-<header class="flex justify-between items-center w-full px-5 md:px-12 h-14 sticky top-0 z-50 bg-surface border-b border-outline-variant">
-<div class="flex items-center gap-4 ml-auto">
-<a class="flex items-center gap-2 text-sm font-semibold text-on-surface" href="{% url 'profile' %}">
-{% if request.user.profile.profile_picture %}<img class="w-8 h-8 rounded-full object-cover" src="{{ request.user.profile.profile_picture.url }}" alt="Profile picture">{% else %}<span class="material-symbols-outlined text-3xl text-on-surface-variant">account_circle</span>{% endif %}
-<span>{{ request.user.username }}</span>
-</a>
-</div>
-</header>
-
-<div class="p-6 md:p-16 flex-1 max-w-7xl mx-auto w-full">
-<h2 class="text-3xl font-semibold text-primary mb-2">Analytics</h2>
-<p class="text-on-surface-variant mb-8">Breakdown of {{ total_reports }} total reports across categories, barangays, and status.</p>
-
-{% if avg_resolution_days %}
-<div class="bg-white border border-outline-variant rounded-xl p-6 mb-8 flex items-center gap-4">
-<span class="material-symbols-outlined text-secondary bg-secondary-container p-3 rounded-full text-2xl">schedule</span>
-<div>
-<p class="text-xs text-on-surface-variant uppercase tracking-wider">Average Resolution Time</p>
-<p class="text-3xl font-bold text-on-surface">{{ avg_resolution_days }} days</p>
-</div>
-</div>
-{% endif %}
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-<div class="bg-white border border-outline-variant rounded-xl p-6">
-<h3 class="text-lg font-semibold text-primary mb-4">By Category</h3>
-<div class="flex flex-col gap-3">
-{% for item in category_data %}
-<div>
-<div class="flex justify-between text-sm mb-1">
-<span class="text-on-surface capitalize">{{ item.label }}</span>
-<span class="text-on-surface-variant">{{ item.count }} ({{ item.percent }}%)</span>
-</div>
-<div class="w-full bg-surface-container rounded-full h-2">
-<div class="bar-fill bg-primary h-2 rounded-full" data-percent="{{ item.percent }}"></div>
-</div>
-</div>
-{% empty %}
-<p class="text-sm text-on-surface-variant">No data yet.</p>
-{% endfor %}
-</div>
-</div>
-
-<div class="bg-white border border-outline-variant rounded-xl p-6">
-<h3 class="text-lg font-semibold text-primary mb-4">By Barangay</h3>
-<div class="flex flex-col gap-3">
-{% for item in barangay_data %}
-<div>
-<div class="flex justify-between text-sm mb-1">
-<span class="text-on-surface">{{ item.label }}</span>
-<span class="text-on-surface-variant">{{ item.count }} ({{ item.percent }}%)</span>
-</div>
-<div class="w-full bg-surface-container rounded-full h-2">
-<div class="bar-fill bg-secondary h-2 rounded-full" data-percent="{{ item.percent }}"></div>
-</div>
-</div>
-{% empty %}
-<p class="text-sm text-on-surface-variant">No data yet.</p>
-{% endfor %}
-</div>
-</div>
-
-<div class="bg-white border border-outline-variant rounded-xl p-6">
-<h3 class="text-lg font-semibold text-primary mb-4">By Status</h3>
-<div class="flex flex-col gap-3">
-{% for item in status_data %}
-<div>
-<div class="flex justify-between text-sm mb-1">
-<span class="text-on-surface capitalize">{{ item.label }}</span>
-<span class="text-on-surface-variant">{{ item.count }} ({{ item.percent }}%)</span>
-</div>
-<div class="w-full bg-surface-container rounded-full h-2">
-<div class="bar-fill h-2 rounded-full" style="background-color:#d97706" data-percent="{{ item.percent }}"></div>
-</div>
-</div>
-{% empty %}
-<p class="text-sm text-on-surface-variant">No data yet.</p>
-{% endfor %}
-</div>
-</div>
-
-</div>
-</div>
-</main>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.bar-fill').forEach(function (bar) {
-    var percent = bar.getAttribute('data-percent') || '0';
-    bar.style.width = percent + '%';
-  });
-});
-</script>
-
-</body>
-</html>
+{% endblock %}

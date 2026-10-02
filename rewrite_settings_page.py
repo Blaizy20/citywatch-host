@@ -1,4 +1,6 @@
-{% extends 'analytics/admin_base.html' %}
+import codecs
+
+html = '''{% extends 'analytics/admin_base.html' %}
 {% load static %}
 {% block content %}
 
@@ -169,3 +171,7 @@
 </style>
 
 {% endblock %}
+'''
+
+with codecs.open('d:/citywatch/assignments/templates/assignments/department_list.html', 'w', 'utf-8') as f:
+    f.write(html)
