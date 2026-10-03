@@ -2,3 +2,5 @@ django
 python-dotenv
 gunicorn
 Pillow
+dj-database-url
+mysqlclient

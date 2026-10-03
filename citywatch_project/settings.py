@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -96,6 +97,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+db_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL')
+if db_url:
+    DATABASES['default'] = dj_database_url.parse(db_url)
 
 
 # Password validation
